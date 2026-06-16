@@ -11,23 +11,13 @@
 #include "pid.h"
 #include "pwm.h"
 #include "cap_controller_task.h"
+#include "db_cap_controller.h"
 
 #include "board.h"
 #include "app.h"
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-#define CAP_300V_CHARNGE_RANGE_MAX 		9
-#define CAP_50V_CHARNGE_RANGE_MAX 		5
 
 
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Struct ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Private Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-
+#define CAP_300V_CHARNGE_RANGE_MAX 9
 Charge_Range_t Cap_300V_charge_range[CAP_300V_CHARNGE_RANGE_MAX] =
 {
     {
@@ -68,7 +58,7 @@ Charge_Range_t Cap_300V_charge_range[CAP_300V_CHARNGE_RANGE_MAX] =
     }
 };
 
-
+#define CAP_50V_CHARNGE_RANGE_MAX 5
 Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
 {
     {
@@ -92,68 +82,56 @@ Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
         .Duty_Max = 20,
     }
 };
-typedef struct _Cap_typedef_
-{
-    uint16_t    ADC_Value;
-
-    bool        is_charge_on;
-
-    uint16_t    set_charge_voltage_ADC;
-    uint8_t     charge_PWM_duty;
-
-    PID_TypeDef charge_PID;
-    PWM_TypeDef charge_PWM;
-
-    bool        is_discharge_on;
-
-    uint16_t    set_discharge_voltage_ADC;
-    uint8_t     discharge_PWM_duty;
-
-    PID_TypeDef discharge_PID;
-    PWM_TypeDef discharge_PWM;
-
-    bool        is_notified_enable;
-
-} Cap_typedef;
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-static Cap_typedef s_Cap_300V =
-{
-    .ADC_Value = 0,
+static Cap_Control_t s_Cap_300V = {
 
-    .is_charge_on = false,
+		.max_cap_volt = 300,
 
-    .set_charge_voltage_ADC = 0,
-    .charge_PWM_duty = 0,
+		.raw_ADC_Value = 0,
+		.set_charge_voltage_ADC = 0,
 
-    .is_discharge_on = false,
+		.charge_PWM_duty = 0,
 
-    .set_discharge_voltage_ADC = 0,
-    .discharge_PWM_duty = 0,
+		.charge_state = CAP_SOFT_START_STATE,
+		.p_range = Cap_300V_charge_range,
+		.range_max = CAP_300V_CHARNGE_RANGE_MAX,
+		.range_set = 0,
+		.range_index = 0,
+		.soft_start_count = 0,
+
+		.calib_coefficient = 0.08297207031f,
+
+		.is_notified_on = false,
+
+};
+static Cap_Control_t s_Cap_50V= {
+
+		.max_cap_volt = 50,
+
+		.raw_ADC_Value = 0,
+		.set_charge_voltage_ADC = 0,
+
+		.charge_PWM_duty = 0,
+
+		.charge_state = CAP_SOFT_START_STATE,
+		.p_range = Cap_50V_charge_range,
+		.range_max = CAP_50V_CHARNGE_RANGE_MAX,
+		.range_set = 0,
+		.range_index = 0,
+		.soft_start_count = 0,
+
+		.calib_coefficient = 0.01366007326f,
+
+		.is_notified_on = false,
+
 };
 
-static Cap_typedef s_Cap_50V =
-{
-    .ADC_Value = 0,
-
-    .is_charge_on = false,
-
-    .set_charge_voltage_ADC = 0,
-    .charge_PWM_duty = 0,
-
-    .is_discharge_on = false,
-
-    .set_discharge_voltage_ADC = 0,
-    .discharge_PWM_duty = 0,
-};
-
-volatile static Cap_typedef* Cap_array[2] =
+volatile static Cap_Control_t* Cap_array[2] =
 {
     &s_Cap_300V,
     &s_Cap_50V,
 };
-
 volatile static uint8_t  Cap_array_index = 0;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -161,131 +139,78 @@ static void Cap_ADC_Init(uint32_t ADC_Sampling_Time);
 static void Cap_PWM_Init(uint32_t freq_300V, uint32_t freq_50V);
 static void Cap_Discharge_Init(void);
 
-static inline void FlyBack_PID_Compute(volatile Cap_typedef* p_cap_x);
-static inline void Flyback_Set_Freq(Cap_typedef* p_cap_x, uint32_t _Freq);
-static inline void Flyback_Set_Duty(Cap_typedef* p_cap_x, uint32_t _Duty);
 
+static inline void FlyBack_PID_Compute(volatile Cap_Control_t* p_cap_x);
+static inline void Flyback_Set_Freq(Cap_Control_t* p_cap_x, uint32_t _Freq);
+static inline void Flyback_Set_Duty(Cap_Control_t* p_cap_x, uint32_t _Duty);
 
 static void Cap_Controller_Charge_Monitor_300V(void);
 static void Cap_Controller_Discharge_Monitor_300V(void);
 static void Cap_Controller_Charge_Monitor_50V(void);
 static void Cap_Controller_Discharge_Monitor_50V(void);
 
-static uint16_t Cap_Calib_Calculate(Cap_Controller_Task_typedef* p_cap_x, uint16_t raw_voltage);
-static uint16_t Cap_ADC_to_Volt(Cap_Controller_Task_typedef* p_cap_x, uint16_t ADC_value);
-static void Cap_Set_Volt_Internal(Cap_Controller_Task_typedef* p_cap_x, uint16_t set_voltage);
+static uint16_t Cap_Calib_Calculate(Cap_Control_t* p_cap_x, uint16_t raw_voltage);
+static uint16_t Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value);
+static void Cap_Set_Volt_Internal(Cap_Control_t* p_cap_x, uint16_t set_voltage);
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-uint16_t    g_Feedback_Voltage[ADC_CHANNEL_COUNT] = {0};
-
-bool		g_PID_is_300V_on = false;
-uint16_t    g_PID_300V_set_voltage = 0;
-bool        g_is_Discharge_300V_On = false;
-bool        is_300V_notified_enable = false;
-
-bool		g_PID_is_50V_on = false;
-uint16_t 	g_PID_50V_set_voltage	= 0;
-bool        g_is_Discharge_50V_On  = false;
-bool        is_50V_notified_enable = false;
-
-Cap_Controller_Task_typedef g_Cap_300V =
-{
-    .max_cap_volt = 300,
-
-    .charge_state = CAP_SOFT_START_STATE,
-    .p_range = Cap_300V_charge_range,
-    .range_max = CAP_300V_CHARNGE_RANGE_MAX,
-    .range_set = 0,
-    .range_index = 0,
-    .soft_start_count = 0,
-
-    .is_charge_on = false,
-    .set_charge_voltage_ADC = 0,
-
-    .is_discharge_on = false,
-    .set_discharge_voltage_ADC = 0,
-
-    .is_notified_enable = false,
-};
-
-Cap_Controller_Task_typedef g_Cap_50V =
-{
-    .max_cap_volt = 50,
-
-    .charge_state = CAP_SOFT_START_STATE,
-    .p_range = Cap_50V_charge_range,
-    .range_max = CAP_50V_CHARNGE_RANGE_MAX,
-    .range_set = 0,
-    .range_index = 0,
-    .soft_start_count = 0,
-
-    .is_charge_on = false,
-    .set_charge_voltage_ADC = 0,
-
-    .is_discharge_on = false,
-    .set_discharge_voltage_ADC = 0,
-
-    .is_notified_enable = false,
-};
-
-
-extern bool is_ready_for_measure_impedance;
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: Cap Controller Init :::::::: */
 void Cap_Controller_Init(void)
 {
-    s_Cap_300V.charge_PID = (PID_TypeDef)
-    {
-        .PID_Mode       = _PID_MODE_AUTOMATIC,
-        .PON_Type       = _PID_P_ON_E,
-        .PID_Direction  = _PID_CD_DIRECT,
-        .Kp             = 0.04 + 0.26,
-        .Ki             = 0.5,
-        .Kd             = 0.0,
-        .MyInput        = &s_Cap_300V.ADC_Value,
-        .MyOutput       = &s_Cap_300V.charge_PWM_duty,
-        .MySetpoint     = &s_Cap_300V.set_charge_voltage_ADC,
-        .Output_Min     = 0,
-        .Output_Max     = 25,
-    };
+		s_Cap_300V.charge_PID = (PID_TypeDef)
+	    {
+	        .PID_Mode       = _PID_MODE_AUTOMATIC,
+	        .PON_Type       = _PID_P_ON_E,
+	        .PID_Direction  = _PID_CD_DIRECT,
+	        .Kp             = 0.04 + 0.26,
+	        .Ki             = 0.5,
+	        .Kd             = 0.0,
+	        .MyInput        = &s_Cap_300V.raw_ADC_Value,
+	        .MyOutput       = &s_Cap_300V.charge_PWM_duty,
+	        .MySetpoint     = &s_Cap_300V.set_charge_voltage_ADC,
+	        .Output_Min     = 0,
+	        .Output_Max     = 25,
+	    };
 
-    s_Cap_50V.charge_PID = (PID_TypeDef)
-    {
-        .PID_Mode 		= 	_PID_MODE_AUTOMATIC,
-        .PON_Type 		= 	_PID_P_ON_E,
-        .PID_Direction 	=	_PID_CD_DIRECT,
-        .Kp				= 	0.04 + 0.26,
-        .Ki				= 	0.5,
-        .Kd 			=	0.0,
-        .MyInput		=	&s_Cap_50V.ADC_Value,
-        .MyOutput		= 	&s_Cap_50V.charge_PWM_duty,
-        .MySetpoint		=	&s_Cap_50V.set_charge_voltage_ADC,
-        .Output_Min		= 	0,
-        .Output_Max		=	10,
-    };
+	    s_Cap_50V.charge_PID = (PID_TypeDef)
+	    {
+	        .PID_Mode 		= 	_PID_MODE_AUTOMATIC,
+	        .PON_Type 		= 	_PID_P_ON_E,
+	        .PID_Direction 	=	_PID_CD_DIRECT,
+	        .Kp				= 	0.04 + 0.26,
+	        .Ki				= 	0.5,
+	        .Kd 			=	0.0,
+	        .MyInput		=	&s_Cap_50V.raw_ADC_Value,
+	        .MyOutput		= 	&s_Cap_50V.charge_PWM_duty,
+	        .MySetpoint		=	&s_Cap_50V.set_charge_voltage_ADC,
+	        .Output_Min		= 	0,
+	        .Output_Max		=	10,
+	    };
 
-    s_Cap_300V.charge_PWM = (PWM_TypeDef)
-    {
-        .TIMx       =   FLYBACK_SW1_HANDLE,
-        .Channel    =   FLYBACK_SW1_CHANNEL,
-        .Prescaler  =   0,
-        .Mode       =   LL_TIM_OCMODE_PWM1,
-        .Polarity   =   LL_TIM_OCPOLARITY_HIGH,
-        .Duty       =   0,
-        .Freq       =   0,
-    };
+	    s_Cap_300V.charge_PWM = (PWM_TypeDef)
+	    {
+	        .TIMx       =   FLYBACK_SW1_HANDLE,
+	        .Channel    =   FLYBACK_SW1_CHANNEL,
+	        .Prescaler  =   0,
+	        .Mode       =   LL_TIM_OCMODE_PWM1,
+	        .Polarity   =   LL_TIM_OCPOLARITY_HIGH,
+	        .Duty       =   0,
+	        .Freq       =   0,
+	    };
 
-    s_Cap_50V.charge_PWM = (PWM_TypeDef)
-    {
-        .TIMx       =   FLYBACK_SW2_HANDLE,
-        .Channel    =   FLYBACK_SW2_CHANNEL,
-        .Prescaler  =   0,
-        .Mode       =   LL_TIM_OCMODE_PWM1,
-        .Polarity   =   LL_TIM_OCPOLARITY_HIGH,
-        .Duty       =   0,
-        .Freq       =   0,
-    };
+	    s_Cap_50V.charge_PWM = (PWM_TypeDef)
+	    {
+	        .TIMx       =   FLYBACK_SW2_HANDLE,
+	        .Channel    =   FLYBACK_SW2_CHANNEL,
+	        .Prescaler  =   0,
+	        .Mode       =   LL_TIM_OCMODE_PWM1,
+	        .Polarity   =   LL_TIM_OCPOLARITY_HIGH,
+	        .Duty       =   0,
+	        .Freq       =   0,
+	    };
+
+	db_cap_init();
 
     uint32_t ADC_Sampling_Time = LL_ADC_SAMPLINGTIME_480CYCLES;
     Cap_ADC_Init(ADC_Sampling_Time);
@@ -295,117 +220,116 @@ void Cap_Controller_Init(void)
 
     Cap_Discharge_Init();
 
-    Calib_Task_Init();
 
-    for (uint8_t Idx = 0; Idx < g_Cap_300V.range_max; Idx++)
+    for (uint8_t Idx = 0; Idx < s_Cap_300V.range_max; Idx++)
     {
-        g_Cap_300V.p_range[Idx].ADC_Value = Cap_Calib_Calculate(&g_Cap_300V, g_Cap_300V.p_range[Idx].Volt_Value);
+        s_Cap_300V.p_range[Idx].ADC_Value = Cap_Calib_Calculate(&s_Cap_300V, s_Cap_300V.p_range[Idx].Volt_Value);
     }
 
-    for (uint8_t Idx = 0; Idx < g_Cap_50V.range_max; Idx++)
+    for (uint8_t Idx = 0; Idx < s_Cap_50V.range_max; Idx++)
     {
-        g_Cap_50V.p_range[Idx].ADC_Value = Cap_Calib_Calculate(&g_Cap_50V, g_Cap_50V.p_range[Idx].Volt_Value);
+        s_Cap_50V.p_range[Idx].ADC_Value = Cap_Calib_Calculate(&s_Cap_50V, s_Cap_50V.p_range[Idx].Volt_Value);
     }
 }
 
 
-uint8_t pin = 0;
 /* :::::::::: Cap Controller Charge Task :::::::: */
 void Cap_Controller_Charge_Task(void*)
-
 {
-    //s_Cap_300V.is_charge_on           = g_Cap_300V.is_charge_on;
-    s_Cap_300V.set_charge_voltage_ADC = g_Cap_300V.set_charge_voltage_ADC;
-    s_Cap_300V.is_discharge_on        = g_Cap_300V.is_discharge_on;
+	//---PROFILE 300V-----
+	bool hv_cmd_charge = false;
+	bool hv_cmd_discharge = false;
+	bool hv_OVV_flag = false;
+	uint16_t hv_set_volt = 0;
 
-    //s_Cap_50V.is_charge_on            = g_Cap_50V.is_charge_on;
-    s_Cap_50V.set_charge_voltage_ADC  = g_Cap_50V.set_charge_voltage_ADC;
-    s_Cap_50V.is_discharge_on         = g_Cap_50V.is_discharge_on;
+	db_cap_read(DB_ID_CAP_HV_CMD_CHARGE, &hv_cmd_charge);
+	db_cap_read(DB_ID_CAP_HV_CMD_DISCHARGE, &hv_cmd_discharge);
+	db_cap_read(DB_ID_CAP_HV_OVV_FLAG, &hv_OVV_flag);
+	db_cap_read(DB_ID_CAP_HV_VOLT_SET, &hv_set_volt);
 
-    s_Cap_300V.is_notified_enable     = g_Cap_300V.is_notified_enable;
-    s_Cap_50V.is_notified_enable      = g_Cap_50V.is_notified_enable;
+	if (hv_cmd_charge == true){
+		if(s_Cap_300V.raw_ADC_Value >= (s_Cap_300V.set_charge_voltage_ADC*0.99)){
+			if(s_Cap_300V.charge_state == CAP_SET_FREE_CHARGE_STATE){
+				if(s_Cap_300V.is_notified_on == true){
+					char msg[128];
+					sprintf(msg,"HV CAP FINISHED CHARGING TO %dV\n\r", hv_set_volt);
+					UART_Driver_SendString(CMD_line_handle,msg);
 
-    if (g_Cap_300V.is_charge_on == true)
-    {
-        if (s_Cap_300V.ADC_Value >= (s_Cap_300V.set_charge_voltage_ADC * 0.99))
-        {
-            if (g_Cap_300V.charge_state == CAP_SET_FREE_CHARGE_STATE)
-            {
-                if (s_Cap_300V.is_notified_enable == true)
-                {
-                	char msg[128];
-                	sprintf(msg,"HV CAP FINISHED CHARGING TO %dV\n\r", g_Cap_300V.set_charge_voltage_USER);
-                	UART_Driver_SendString(CMD_line_handle,msg);
+					s_Cap_300V.is_notified_on = false;
+				}
+			}
+        CAP_State_t hv_state = CAP_IS_FINISH_CHARGING;
+        db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+		}
+	}
+	else if(hv_cmd_charge == false){
+		s_Cap_300V.charge_PWM_duty = 0;
+		Flyback_Set_Duty(&s_Cap_300V, 0);
+	}
 
-                    g_Cap_300V.is_notified_enable = false;
-                    s_Cap_300V.is_notified_enable = false;
-                }
-            }
+	if(hv_cmd_discharge == true){
+		LL_GPIO_SetOutputPin(DISCHARGE_300V_PORT,DISCHARGE_300V_PIN);
+	}
+	else if(hv_cmd_discharge == false){
+		LL_GPIO_ResetOutputPin(DISCHARGE_300V_PORT, DISCHARGE_300V_PIN);
+	}
 
-            g_Cap_300V.cap_state = CAP_IS_FINISH_CHARGING;
-        }
-    }
+	if(hv_OVV_flag == true){
+		LL_GPIO_ResetOutputPin(FLYBACK_SD1_PORT, FLYBACK_SD1_PIN);
+	}
+	else if(hv_OVV_flag == false){
+		LL_GPIO_SetOutputPin(FLYBACK_SD1_PORT, FLYBACK_SD1_PIN);
+	}
 
-    if (g_Cap_50V.is_charge_on == true)
-    {
-        if (s_Cap_50V.ADC_Value >= (s_Cap_50V.set_charge_voltage_ADC * 0.99))
-        {
-            if (g_Cap_50V.charge_state == CAP_SET_FREE_CHARGE_STATE)
-            {
-                if (s_Cap_50V.is_notified_enable == true)
-                {
-                	char msg[128];
-                	sprintf(msg,"LV CAP FINISHED CHARGING TO %dV\n\r", g_Cap_50V.set_charge_voltage_USER);
-                	UART_Driver_SendString(CMD_line_handle,msg);
+	//---PROFILE 50V-----
 
-                    g_Cap_50V.is_notified_enable = false;
-                    s_Cap_50V.is_notified_enable = false;
-                }
-            }
+	bool lv_cmd_charge = false;
+	bool lv_cmd_discharge = false;
+	bool lv_OVV_flag = false;
+	uint16_t lv_set_volt = 0;
 
-            g_Cap_50V.cap_state = CAP_IS_FINISH_CHARGING;
-        }
-    }
+	db_cap_read(DB_ID_CAP_LV_CMD_CHARGE, &lv_cmd_charge);
+	db_cap_read(DB_ID_CAP_LV_CMD_DISCHARGE, &lv_cmd_discharge);
+	db_cap_read(DB_ID_CAP_LV_OVV_FLAG, &lv_OVV_flag);
+	db_cap_read(DB_ID_CAP_LV_VOLT_SET, &lv_set_volt);
 
 
-    if (LL_GPIO_IsInputPinSet(OVP_PORT, OVP_300_PIN))
-    {
-    	pin = 1;
-    }
-    else
-    {
-    	pin = 0;
-    }
+	if (lv_cmd_charge == true){
+		if(s_Cap_50V.raw_ADC_Value >= (s_Cap_50V.set_charge_voltage_ADC*0.99)){
+			if(s_Cap_50V.charge_state == CAP_SET_FREE_CHARGE_STATE){
 
-    if (s_Cap_300V.is_charge_on == false)
-    {
-        s_Cap_300V.charge_PWM_duty = 0;
-        Flyback_Set_Duty(&s_Cap_300V, 0);
-    }
+				if(s_Cap_50V.is_notified_on == true){
+					char msg[128];
+					sprintf(msg,"LV CAP FINISHED CHARGING TO %dV\n\r", lv_set_volt);
+					UART_Driver_SendString(CMD_line_handle,msg);
 
-    if (s_Cap_50V.is_charge_on == false)
-    {
-        s_Cap_50V.charge_PWM_duty = 0;
-        Flyback_Set_Duty(&s_Cap_50V, 0);
-    }
+					s_Cap_50V.is_notified_on = false;
+				}
 
-    if (s_Cap_300V.is_discharge_on == false)
-    {
-        LL_GPIO_ResetOutputPin(DISCHARGE_300V_PORT, DISCHARGE_300V_PIN);
-    }
-    else if (s_Cap_300V.is_discharge_on == true)
-    {
-        LL_GPIO_SetOutputPin(DISCHARGE_300V_PORT, DISCHARGE_300V_PIN);
-    }
+			}
+         CAP_State_t lv_state = CAP_IS_FINISH_CHARGING;
+         db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+		}
+	}
+	else if(lv_cmd_charge == false){
+		s_Cap_50V.charge_PWM_duty = 0;
+		Flyback_Set_Duty(&s_Cap_50V, 0);
+	}
 
-    if (s_Cap_50V.is_discharge_on == false)
-    {
-        LL_GPIO_ResetOutputPin(DISCHARGE_50V_PORT, DISCHARGE_50V_PIN);
-    }
-    else if (s_Cap_50V.is_discharge_on == true)
-    {
-        LL_GPIO_SetOutputPin(DISCHARGE_50V_PORT, DISCHARGE_50V_PIN);
-    }
+	if(lv_cmd_discharge == true){
+		LL_GPIO_SetOutputPin(DISCHARGE_50V_PORT,DISCHARGE_50V_PIN);
+	}
+	else if(lv_cmd_discharge == false){
+		LL_GPIO_ResetOutputPin(DISCHARGE_50V_PORT, DISCHARGE_50V_PIN);
+	}
+
+	if(lv_OVV_flag == true){
+		LL_GPIO_ResetOutputPin(FLYBACK_SD2_PORT, FLYBACK_SD2_PIN);
+	}
+	else if(lv_OVV_flag == false){
+		LL_GPIO_SetOutputPin(FLYBACK_SD2_PORT, FLYBACK_SD2_PIN);
+	}
+
 }
 
 void Cap_Controller_Monitor_Task(void*)
@@ -417,164 +341,258 @@ void Cap_Controller_Monitor_Task(void*)
     Cap_Controller_Discharge_Monitor_50V();
 }
 
+
 /* :::::::::: Cap Controller Command :::::::: */
-void Cap_Set_Volt(Cap_Controller_Task_typedef* p_cap_x, uint16_t set_voltage, bool is_notified)
+void Cap_Set_Volt(Cap_Profile_t prf_cap_x, uint16_t set_voltage)
 {
-    p_cap_x->set_charge_voltage_USER = set_voltage;
-    //p_cap_x->set_charge_voltage_ADC  = Cap_Calib_Calculate(p_cap_x, set_voltage);
-
-    p_cap_x->is_notified_enable = is_notified;
+	if(prf_cap_x == CAP_PRF_HV) db_cap_write(DB_ID_CAP_HV_VOLT_SET, &set_voltage);
+	else if(prf_cap_x == CAP_PRF_LV) db_cap_write(DB_ID_CAP_LV_VOLT_SET, &set_voltage);
 }
 
-void Cap_Set_Volt_All(uint16_t HV_set_voltage, uint16_t LV_set_voltage, bool HV_is_notified, bool LV_is_notified)
+void Cap_Set_Volt_All(uint16_t HV_set_voltage, uint16_t LV_set_voltage)
 {
-    g_Cap_300V.set_charge_voltage_USER  = HV_set_voltage;
-    g_Cap_50V.set_charge_voltage_USER   = LV_set_voltage;
 
-    //g_Cap_300V.set_charge_voltage_ADC  = Cap_Calib_Calculate(&g_Cap_300V, HV_set_voltage);
-    //g_Cap_50V.set_charge_voltage_ADC   = Cap_Calib_Calculate(&g_Cap_50V, LV_set_voltage);
+    db_cap_write(DB_ID_CAP_HV_VOLT_SET, &HV_set_voltage);
 
-    g_Cap_300V.is_notified_enable   = HV_is_notified;
-    g_Cap_50V.is_notified_enable    = LV_is_notified;
+    db_cap_write(DB_ID_CAP_LV_VOLT_SET, &LV_set_voltage);
 }
 
-void Cap_Set_Charge(Cap_Controller_Task_typedef* p_cap_x, bool charge_state, bool is_notified)
+void Cap_Set_Charge(Cap_Profile_t prf_cap_x, bool charge_state, bool is_notified)
 {
-    if (charge_state == true)
-    {
-        p_cap_x->is_discharge_on = false;
-        p_cap_x->cap_state = CAP_IS_CHARGING;
-    }
-    else
-    {
-        p_cap_x->cap_state = CAP_IS_IDLE;
-    }
+	bool cap_cmd_discharge = false;
+	CAP_State_t cap_state;
 
-    p_cap_x->is_charge_on = charge_state;
+	if(prf_cap_x == CAP_PRF_HV){
 
-    p_cap_x->soft_start_count = 0;
+		if(charge_state == true){
+				cap_cmd_discharge = false;
+				db_cap_write(DB_ID_CAP_HV_CMD_DISCHARGE, &cap_cmd_discharge);
 
-    p_cap_x->charge_state = CAP_SOFT_START_STATE;
+				cap_state = CAP_IS_CHARGING;
+				db_cap_write(DB_ID_CAP_HV_STATE, &cap_state);
+		}
+		else{
+				cap_state = CAP_IS_IDLE;
+				db_cap_write(DB_ID_CAP_HV_STATE, &cap_state);
+		}
+		db_cap_write(DB_ID_CAP_HV_CMD_DISCHARGE, &charge_state);
 
-    p_cap_x->is_notified_enable = is_notified;
+	    s_Cap_300V.soft_start_count = 0;
+
+	    s_Cap_300V.charge_state = CAP_SOFT_START_STATE;
+
+	    s_Cap_300V.is_notified_on = is_notified;
+
+	}
+
+	else if(prf_cap_x == CAP_PRF_LV){
+
+		if(charge_state == true){
+				cap_cmd_discharge = false;
+				db_cap_write(DB_ID_CAP_LV_CMD_CHARGE, &cap_cmd_discharge);
+
+				cap_state = CAP_IS_CHARGING;
+				db_cap_write(DB_ID_CAP_LV_STATE, &cap_state);
+		}
+		else{
+				cap_state = CAP_IS_IDLE;
+				db_cap_write(DB_ID_CAP_LV_STATE, &cap_state);
+		}
+		db_cap_write(DB_ID_CAP_LV_CMD_DISCHARGE, &charge_state);
+
+		s_Cap_50V.soft_start_count = 0;
+
+		s_Cap_50V.charge_state = CAP_SOFT_START_STATE;
+
+		s_Cap_50V.is_notified_on = is_notified;
+	}
 }
 
-void Cap_Set_Charge_All(bool HV_charge_state, bool LV_charge_state, bool HV_is_notified, bool LV_is_notified)
+void Cap_Set_Charge_All(bool HV_charge_state, bool LV_charge_state,bool HV_is_notified, bool LV_is_notified )
 {
-    if (HV_charge_state == true)
-    {
-        g_Cap_300V.is_discharge_on = false;
-        g_Cap_300V.cap_state = CAP_IS_CHARGING;
-    }
-    else
-    {
-        g_Cap_300V.cap_state = CAP_IS_IDLE;
-    }
+	//------------ FOR 300V -------------------
+		bool hv_cmd_discharge = false;
+		CAP_State_t hv_state;
 
-    if (LV_charge_state == true)
-    {
-        g_Cap_50V.is_discharge_on = false;
-        g_Cap_50V.cap_state = CAP_IS_CHARGING;
-    }
-    else
-    {
-        g_Cap_50V.cap_state = CAP_IS_IDLE;
-    }
 
-    g_Cap_300V.is_charge_on = HV_charge_state;
-    g_Cap_50V.is_charge_on  = LV_charge_state;
+		if(HV_charge_state == true){
+			hv_cmd_discharge = false;
+			db_cap_write(DB_ID_CAP_HV_CMD_DISCHARGE, &hv_cmd_discharge);
 
-    g_Cap_300V.soft_start_count = 0;
-    g_Cap_50V.soft_start_count = 0;
+			hv_state = CAP_IS_CHARGING;
+			db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+		}
+		else{
+			hv_state = CAP_IS_IDLE;
+			db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+		}
 
-    g_Cap_300V.charge_state = CAP_SOFT_START_STATE;
-    g_Cap_50V.charge_state = CAP_SOFT_START_STATE;
+	//------------ FOR 50V -------------------
 
-    g_Cap_300V.is_notified_enable   = HV_is_notified;
-    g_Cap_50V.is_notified_enable    = LV_is_notified;
+		bool lv_cmd_discharge = false;
+		CAP_State_t lv_state;
+
+		if(LV_charge_state == true){
+			lv_cmd_discharge = false;
+			db_cap_write(DB_ID_CAP_LV_CMD_DISCHARGE, &lv_cmd_discharge);
+
+			lv_state = CAP_IS_CHARGING;
+			db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+		}
+		else{
+			lv_state = CAP_IS_IDLE;
+			db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+		}
+
+		db_cap_write(DB_ID_CAP_HV_CMD_CHARGE, &HV_charge_state);
+		db_cap_write(DB_ID_CAP_LV_CMD_CHARGE, &LV_charge_state);
+
+	    s_Cap_300V.soft_start_count = 0;
+	    s_Cap_50V.soft_start_count = 0;
+
+	    s_Cap_300V.charge_state = CAP_SOFT_START_STATE;
+	    s_Cap_50V.charge_state = CAP_SOFT_START_STATE;
+
+	    s_Cap_300V.is_notified_on   = HV_is_notified;
+	    s_Cap_50V.is_notified_on    = LV_is_notified;
 }
 
-void Cap_Set_Discharge(Cap_Controller_Task_typedef* p_cap_x, bool discharge_state, bool is_notified)
+void Cap_Set_Discharge(Cap_Profile_t prf_cap_x, bool discharge_state)
 {
-    if (discharge_state == true)
-    {
-        p_cap_x->is_charge_on = false;
-        p_cap_x->cap_state = CAP_IS_DISCHARGING;
-    }
-    else
-    {
-        p_cap_x->cap_state = CAP_IS_IDLE;
-    }
+	bool cap_cmd_charge = false;
+	CAP_State_t cap_state;
 
-    p_cap_x->is_discharge_on = discharge_state;
+	if(prf_cap_x == CAP_PRF_HV){
 
-    p_cap_x->is_notified_enable = is_notified;
+		if(discharge_state == true){
+				cap_cmd_charge = false;
+				db_cap_write(DB_ID_CAP_HV_CMD_CHARGE, &cap_cmd_charge);
+
+				cap_state = CAP_IS_DISCHARGING;
+				db_cap_write(DB_ID_CAP_HV_STATE, &cap_state);
+		}
+		else{
+				cap_state = CAP_IS_IDLE;
+				db_cap_write(DB_ID_CAP_HV_STATE, &cap_state);
+		}
+		db_cap_write(DB_ID_CAP_HV_CMD_DISCHARGE, &discharge_state);
+	}
+
+	else if(prf_cap_x == CAP_PRF_LV){
+
+		if(discharge_state == true){
+				cap_cmd_charge = false;
+				db_cap_write(DB_ID_CAP_LV_CMD_CHARGE, &cap_cmd_charge);
+
+				cap_state = CAP_IS_DISCHARGING;
+				db_cap_write(DB_ID_CAP_LV_STATE, &cap_state);
+		}
+		else{
+				cap_state = CAP_IS_IDLE;
+				db_cap_write(DB_ID_CAP_LV_STATE, &cap_state);
+		}
+		db_cap_write(DB_ID_CAP_LV_CMD_DISCHARGE, &discharge_state);
+	}
 }
 
-void Cap_Set_Discharge_All(bool HV_discharge_state, bool LV_discharge_state, bool HV_is_notified, bool LV_is_notified)
+void Cap_Set_Discharge_All(bool HV_discharge_state, bool LV_discharge_state)
 {
-    if (HV_discharge_state == true)
-    {
-        g_Cap_300V.is_charge_on = false;
-        g_Cap_300V.cap_state = CAP_IS_DISCHARGING;
-    }
-    else
-    {
-        g_Cap_300V.cap_state = CAP_IS_IDLE;
-    }
+	//------------ FOR 300V -------------------
+	bool hv_cmd_charge = false;
+	CAP_State_t hv_state;
 
-    if (LV_discharge_state == true)
-    {
-        g_Cap_50V.is_charge_on = false;
-        g_Cap_50V.cap_state = CAP_IS_DISCHARGING;
-    }
-    else
-    {
-        g_Cap_50V.cap_state = CAP_IS_IDLE;
-    }
+	if(HV_discharge_state == true)
+	{
+		hv_cmd_charge = false;
+		db_cap_write(DB_ID_CAP_HV_CMD_CHARGE, &hv_cmd_charge);
 
-    g_Cap_300V.is_discharge_on  = HV_discharge_state;
-    g_Cap_50V.is_discharge_on   = LV_discharge_state;
+		hv_state = CAP_IS_DISCHARGING;
+		db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+	}
+	else
+	{
+		hv_state = CAP_IS_IDLE;
+		db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+	}
 
-    g_Cap_300V.is_notified_enable   = HV_is_notified;
-    g_Cap_50V.is_notified_enable    = LV_is_notified;
+	db_cap_write(DB_ID_CAP_HV_CMD_DISCHARGE, &HV_discharge_state);
+
+	//------------ FOR 50V -------------------
+	bool lv_cmd_charge = false;
+	CAP_State_t lv_state;
+
+	if(LV_discharge_state == true){
+		lv_cmd_charge = false;
+		db_cap_write(DB_ID_CAP_LV_CMD_CHARGE, &lv_cmd_charge);
+
+		lv_state = CAP_IS_DISCHARGING;
+		db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+	}
+	else{
+		lv_state = CAP_IS_IDLE;
+		db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+	}
+	db_cap_write(DB_ID_CAP_LV_CMD_DISCHARGE, &LV_discharge_state);
 }
 
-uint16_t Cap_Get_Set_Volt(Cap_Controller_Task_typedef* p_cap_x)
+uint16_t Cap_Get_Set_Volt(Cap_Profile_t prf_cap_x)
 {
-    return p_cap_x->set_charge_voltage_USER;
+	uint16_t cap_set_volt = 0;
+
+	if(prf_cap_x == CAP_PRF_HV) db_cap_read(DB_ID_CAP_HV_VOLT_SET, &cap_set_volt);
+
+	else if(prf_cap_x == CAP_PRF_LV) db_cap_read(DB_ID_CAP_LV_VOLT_SET, &cap_set_volt);
+
+    return cap_set_volt;
 }
 
-bool Cap_Get_is_Charge(Cap_Controller_Task_typedef* p_cap_x)
+bool Cap_Get_is_Charge(Cap_Profile_t prf_cap_x)
 {
-    return p_cap_x->is_charge_on;
+	bool cap_cmd_charge = false;
+
+	if(prf_cap_x == CAP_PRF_HV) db_cap_read(DB_ID_CAP_HV_CMD_CHARGE, &cap_cmd_charge);
+
+	else if(prf_cap_x == CAP_PRF_LV) db_cap_read(DB_ID_CAP_LV_CMD_CHARGE, &cap_cmd_charge);
+
+    return cap_cmd_charge;
 }
 
-bool Cap_Get_is_Discharge(Cap_Controller_Task_typedef* p_cap_x)
+bool Cap_Get_is_Discharge(Cap_Profile_t prf_cap_x)
 {
-    return p_cap_x->is_discharge_on;
+	bool cap_cmd_discharge = false;
+	if(prf_cap_x == CAP_PRF_HV) db_cap_read(DB_ID_CAP_HV_CMD_DISCHARGE, &cap_cmd_discharge);
+
+	else if(prf_cap_x == CAP_PRF_LV) db_cap_read(DB_ID_CAP_LV_CMD_DISCHARGE, &cap_cmd_discharge);
+
+    return cap_cmd_discharge;
 }
 
-bool Cap_Get_is_Notified(Cap_Controller_Task_typedef* p_cap_x)
-{
-    return p_cap_x->is_notified_enable;
-}
-
-uint16_t Cap_Measure_Volt(Cap_Controller_Task_typedef* p_cap_x)
+uint16_t Cap_Measure_Volt(Cap_Profile_t prf_cap_x)
 {
     uint16_t ADC_value_temp = 0;
+    uint16_t Raw_value_temp = 0;
+    Cap_Control_t* p_cap_x;
 
-    if (p_cap_x == &g_Cap_300V)
+    if (prf_cap_x == CAP_PRF_HV)
     {
-        ADC_value_temp = s_Cap_300V.ADC_Value;
+    	p_cap_x = &s_Cap_300V;
+        ADC_value_temp = s_Cap_300V.raw_ADC_Value;
+        Raw_value_temp = Cap_ADC_to_Volt(&s_Cap_300V, ADC_value_temp);
+
+        db_cap_write(DB_ID_CAP_HV_VOLT_RAW, &Raw_value_temp);
     }
-    else if (p_cap_x == &g_Cap_50V)
+    else if (prf_cap_x == CAP_PRF_LV)
     {
-        ADC_value_temp = s_Cap_50V.ADC_Value;
+    	p_cap_x = &s_Cap_50V;
+        ADC_value_temp = s_Cap_50V.raw_ADC_Value;
+        Raw_value_temp = Cap_ADC_to_Volt(&s_Cap_50V, ADC_value_temp);
+
+        db_cap_write(DB_ID_CAP_LV_VOLT_RAW, &Raw_value_temp);
     }
 
     return Cap_ADC_to_Volt(p_cap_x, ADC_value_temp);
 }
+
 
 /* :::::::::: Cap Controller Interupt Handler ::::::::::::: */
 void Cap_Controller_ADC_IRQHandler(void)
@@ -605,13 +623,16 @@ void Cap_Controller_ADC_IRQHandler(void)
     {
         LL_ADC_ClearFlag_EOCS(ADC_FEEDBACK_HANDLE);
 
-        Cap_array[Cap_array_index]->ADC_Value = LL_ADC_REG_ReadConversionData12(ADC_FEEDBACK_HANDLE);
+        Cap_array[Cap_array_index]->raw_ADC_Value = LL_ADC_REG_ReadConversionData12(ADC_FEEDBACK_HANDLE);
 
         FlyBack_PID_Compute(Cap_array[Cap_array_index]);
 
         Cap_array_index ^= 1;
     }
 }
+
+
+
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 static void Cap_ADC_Init(uint32_t ADC_Sampling_Time)
@@ -658,10 +679,8 @@ static void Cap_ADC_Init(uint32_t ADC_Sampling_Time)
 
 static void Cap_PWM_Init(uint32_t freq_300V, uint32_t freq_50V)
 {
-    // Init 300V PWM PID
 	PID_Init(&s_Cap_300V.charge_PID);
 
-	//PWM_Init(&s_Cap_300V.charge_PWM);
     LL_TIM_OC_SetMode(s_Cap_300V.charge_PWM.TIMx, s_Cap_300V.charge_PWM.Channel,  LL_TIM_OCMODE_PWM1);
     LL_TIM_OC_SetPolarity(s_Cap_300V.charge_PWM.TIMx, s_Cap_300V.charge_PWM.Channel, LL_TIM_OCPOLARITY_HIGH);
     LL_TIM_OC_EnablePreload(s_Cap_300V.charge_PWM.TIMx, s_Cap_300V.charge_PWM.Channel);
@@ -718,9 +737,18 @@ static void Cap_Discharge_Init(void)
     LL_GPIO_ResetOutputPin(DISCHARGE_50V_PORT, DISCHARGE_50V_PIN);
 }
 
-static inline void FlyBack_PID_Compute(volatile Cap_typedef* p_cap_x)
+static inline void FlyBack_PID_Compute(volatile Cap_Control_t* p_cap_x)
 {
-    if (p_cap_x->is_charge_on == true)
+	bool cap_cmd_charge = false;
+
+	if(p_cap_x == &s_Cap_50V){
+		db_cap_read(DB_ID_CAP_LV_CMD_CHARGE, &cap_cmd_charge);
+	}
+	else if(p_cap_x == &s_Cap_300V){
+		db_cap_read(DB_ID_CAP_HV_CMD_CHARGE, &cap_cmd_charge);
+	}
+
+    if (cap_cmd_charge == true)
     {
         PID_Compute(&p_cap_x->charge_PID);
 
@@ -749,21 +777,19 @@ static inline void FlyBack_PID_Compute(volatile Cap_typedef* p_cap_x)
     }
 }
 
-static inline void Flyback_Set_Freq(Cap_typedef* p_cap_x, uint32_t _Freq)
+static inline void Flyback_Set_Freq(Cap_Control_t* p_cap_x, uint32_t _Freq)
 {
     PWM_TypeDef* PWMx = &p_cap_x->charge_PWM;
 
     LL_TIM_DisableUpdateEvent(PWMx->TIMx);
 
-    // Set PWM FREQ
-    //PWMx->Freq = __LL_TIM_CALC_ARR(APB1_TIMER_CLK, LL_TIM_GetPrescaler(PWMx->TIMx), _Freq);
     PWMx->Freq = (float)APB1_TIMER_CLK / ((float)(LL_TIM_GetPrescaler(PWMx->TIMx) + 1) * _Freq);
     LL_TIM_SetAutoReload(PWMx->TIMx, PWMx->Freq);
 
     LL_TIM_EnableUpdateEvent(PWMx->TIMx);
 }
 
-static inline void Flyback_Set_Duty(Cap_typedef* p_cap_x, uint32_t _Duty)
+static inline void Flyback_Set_Duty(Cap_Control_t* p_cap_x, uint32_t _Duty)
 {
     PWM_TypeDef* PWMx = &p_cap_x->charge_PWM;
 
@@ -791,271 +817,224 @@ static inline void Flyback_Set_Duty(Cap_typedef* p_cap_x, uint32_t _Duty)
 /* :::::::::: Cap Controller Notify :::::::: */
 static void Cap_Controller_Charge_Monitor_300V(void)
 {
-	if (g_Cap_300V.is_charge_on == false)
+	bool hv_cmd_charge = false;
+	CAP_State_t hv_state;
+	uint16_t hv_set_volt;
+
+	db_cap_read(DB_ID_CAP_HV_CMD_CHARGE, &hv_cmd_charge);
+
+	if(hv_cmd_charge == false) return;
+
+	switch(s_Cap_300V.charge_state)
 	{
-        s_Cap_300V.is_charge_on = g_Cap_300V.is_charge_on;
-        return;
-    }
+	case CAP_SOFT_START_STATE:
 
-    switch (g_Cap_300V.charge_state)
-    {
-    case CAP_SOFT_START_STATE:
-    {
-        if (g_Cap_300V.soft_start_count == 0)
-        {
+        if (s_Cap_300V.soft_start_count == 0){
             PID_SetOutputLimits(&s_Cap_300V.charge_PID, 0, 5);
-            Cap_Set_Volt_Internal(&g_Cap_300V, 5);
-            g_Cap_300V.soft_start_count++;
-            break;
-        }
-        else if (g_Cap_300V.soft_start_count < 4000)
-        {
-            g_Cap_300V.soft_start_count++;
+            Cap_Set_Volt_Internal(&s_Cap_300V, 5);
+            s_Cap_300V.soft_start_count++;
             break;
         }
 
-        // if (Cap_300V_soft_start_count >= 50)
-        for (uint8_t Idx = 0; Idx < g_Cap_300V.range_max; Idx++)
+        else if (s_Cap_300V.soft_start_count < 4000){
+            s_Cap_300V.soft_start_count++;
+            break;
+        }
+
+        for (uint8_t Idx = 0; Idx < s_Cap_300V.range_max; Idx++)
         {
-            if (s_Cap_300V.ADC_Value <= g_Cap_300V.p_range[Idx].ADC_Value)
+            if (s_Cap_300V.raw_ADC_Value <= s_Cap_300V.p_range[Idx].ADC_Value)
             {
-                g_Cap_300V.range_index = Idx;
+                s_Cap_300V.range_index = Idx;
                 break;
             }
         }
 
-        g_Cap_300V.charge_state = CAP_CONTROL_CHARGE_STATE;
+        s_Cap_300V.charge_state = CAP_CONTROL_CHARGE_STATE;
         break;
-    }
-    case CAP_CONTROL_CHARGE_STATE:
-    {
-        if (g_Cap_300V.cap_state != CAP_IS_FINISH_CHARGING)
-        {
+
+	case CAP_CONTROL_CHARGE_STATE:
+
+
+		db_cap_read(DB_ID_CAP_HV_STATE, &hv_state);
+
+		if(hv_state != CAP_IS_FINISH_CHARGING) break;
+
+		db_cap_read(DB_ID_CAP_HV_VOLT_SET, &hv_set_volt);
+
+		if(hv_set_volt > s_Cap_300V.p_range[s_Cap_300V.range_index].Volt_Value){
+            PID_SetOutputLimits(&s_Cap_300V.charge_PID, 0, s_Cap_300V.p_range[s_Cap_300V.range_index].Duty_Max);
+            Cap_Set_Volt_Internal(&s_Cap_300V, s_Cap_300V.p_range[s_Cap_300V.range_index].Volt_Value);
+
+            hv_state = CAP_IS_CHARGING;
+            db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+		}
+		else{
+            PID_SetOutputLimits(&s_Cap_300V.charge_PID, 0, s_Cap_300V.p_range[s_Cap_300V.range_index].Duty_Max);
+            Cap_Set_Volt_Internal(&s_Cap_300V, hv_set_volt);
+
+            hv_state = CAP_IS_CHARGING;
+            db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+            s_Cap_300V.charge_state = CAP_SET_FREE_CHARGE_STATE;
             break;
-        }
+		}
 
-        if (g_Cap_300V.set_charge_voltage_USER > g_Cap_300V.p_range[g_Cap_300V.range_index].Volt_Value)
-        {
-            PID_SetOutputLimits(&s_Cap_300V.charge_PID, 0, g_Cap_300V.p_range[g_Cap_300V.range_index].Duty_Max);
-            Cap_Set_Volt_Internal(&g_Cap_300V, g_Cap_300V.p_range[g_Cap_300V.range_index].Volt_Value);
-            g_Cap_300V.cap_state = CAP_IS_CHARGING;
-        }
-        else
-        {
-            PID_SetOutputLimits(&s_Cap_300V.charge_PID, 0, g_Cap_300V.p_range[g_Cap_300V.range_index].Duty_Max);
-            Cap_Set_Volt_Internal(&g_Cap_300V, g_Cap_300V.set_charge_voltage_USER);
-            g_Cap_300V.cap_state = CAP_IS_CHARGING;
-            g_Cap_300V.charge_state = CAP_SET_FREE_CHARGE_STATE;
-            break;
-        }
+		s_Cap_300V.range_index++;
+		break;
 
-        g_Cap_300V.range_index++;
-        break;
-    }
-    case CAP_SET_FREE_CHARGE_STATE:
-    {
-        if (g_Cap_300V.cap_state != CAP_IS_FINISH_CHARGING)
-        {
-            break;
-        }
+	case CAP_SET_FREE_CHARGE_STATE:
 
-        //PID_SetOutputLimits(&s_Cap_300V.charge_PID, 0, 5);
-//
-//        if (is_measure_impedance_enable == true)
-//        {
-//            is_impedance_volt_complete = true;
-//        }
 
-        break;
-    }
+		db_cap_read(DB_ID_CAP_HV_STATE, &hv_state);
 
-    default:
-        break;
-    }
+		if(hv_state != CAP_IS_FINISH_CHARGING) break;
 
-    s_Cap_300V.is_charge_on = g_Cap_300V.is_charge_on;
+	default:
+		break;
+	}
 
-    // if (s_Cap_300V.ADC_Value >= (s_Cap_300V.set_charge_voltage_ADC * 0.99))
-    // {
-    //     if (g_Cap_300V.charge_state == CAP_FREE_CHARGE_STATE)
-    //     {
-    //         if (s_Cap_300V.is_notified_enable == true)
-    //         {
-    //             UART_Printf(CMD_line_handle, "HV CAP FINISHED CHARGING TO %dV\n", g_Cap_300V.set_charge_voltage_USER);
-    //             UART_Send_String(CMD_line_handle, "> ");
-
-    //             g_Cap_300V.is_notified_enable = false;
-    //             s_Cap_300V.is_notified_enable = false;
-    //         }
-    //     }
-
-    //     g_Cap_300V.cap_state = CAP_IS_FINISH_CHARGING;
-    // }
 }
 
 static void Cap_Controller_Discharge_Monitor_300V(void)
 {
-	if (s_Cap_300V.is_discharge_on == false)
-	{
-        return;
-    }
 
-    if (s_Cap_300V.ADC_Value <= 20)
-    {
-        if (s_Cap_300V.is_notified_enable == true)
-        {
+	bool hv_cmd_discharge = false;
+	CAP_State_t hv_state;
 
-            UART_Driver_SendString(CMD_line_handle,"HV CAP FINISHED RELEASING TO 0V\n\r");
+	db_cap_read(DB_ID_CAP_HV_CMD_DISCHARGE, &hv_cmd_discharge);
 
-            Cap_Set_Discharge(&g_Cap_300V, false, false);
+	if(hv_cmd_discharge == false) return;
 
-            g_Cap_300V.is_notified_enable = false;
-            s_Cap_300V.is_notified_enable = false;
-        }
+	if(s_Cap_300V.raw_ADC_Value <= 20){
 
-//        is_ready_for_measure_impedance = true;
-        g_Cap_300V.cap_state = CAP_IS_FINISH_DISCHARGING;
-    }
+        UART_Driver_SendString(CMD_line_handle,"HV CAP FINISHED RELEASING TO 0V\n\r");
+        Cap_Set_Discharge(CAP_PRF_HV, false);
+
+
+        hv_state = CAP_IS_FINISH_DISCHARGING;
+        db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+	}
+
 }
 
 static void Cap_Controller_Charge_Monitor_50V(void)
 {
-    if (g_Cap_50V.is_charge_on == false)
+	bool lv_cmd_charge = false;
+	CAP_State_t lv_state;
+	uint16_t lv_set_volt;
+
+	db_cap_read(DB_ID_CAP_LV_CMD_CHARGE, &lv_cmd_charge);
+
+	if(lv_cmd_charge == false) return;
+
+	switch(s_Cap_50V.charge_state)
 	{
-        s_Cap_50V.is_charge_on = g_Cap_50V.is_charge_on;
-        return;
-    }
+	case CAP_SOFT_START_STATE:
 
-    switch (g_Cap_50V.charge_state)
-    {
-    case CAP_SOFT_START_STATE:
-    {
-        if (g_Cap_50V.soft_start_count == 0)
-        {
+        if (s_Cap_50V.soft_start_count == 0){
             PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, 5);
-            Cap_Set_Volt_Internal(&g_Cap_50V, 5);
-            g_Cap_50V.soft_start_count++;
-            break;
-        }
-        else if (g_Cap_50V.soft_start_count < 4000)
-        {
-            g_Cap_50V.soft_start_count++;
+            Cap_Set_Volt_Internal(&s_Cap_50V, 5);
+            s_Cap_50V.soft_start_count++;
             break;
         }
 
-        // if (Cap_300V_soft_start_count >= 50)
-        for (uint8_t Idx = 0; Idx < g_Cap_50V.range_max; Idx++)
+        else if (s_Cap_50V.soft_start_count < 4000){
+            s_Cap_50V.soft_start_count++;
+            break;
+        }
+
+        for (uint8_t Idx = 0; Idx < s_Cap_50V.range_max; Idx++)
         {
-            if (s_Cap_50V.ADC_Value <= g_Cap_50V.p_range[Idx].ADC_Value)
+            if (s_Cap_50V.raw_ADC_Value <= s_Cap_50V.p_range[Idx].ADC_Value)
             {
-                g_Cap_50V.range_index = Idx;
+                s_Cap_50V.range_index = Idx;
                 break;
             }
         }
 
-        g_Cap_50V.charge_state = CAP_CONTROL_CHARGE_STATE;
+        s_Cap_50V.charge_state = CAP_CONTROL_CHARGE_STATE;
         break;
-    }
-    case CAP_CONTROL_CHARGE_STATE:
-    {
-        if (g_Cap_50V.cap_state != CAP_IS_FINISH_CHARGING)
-        {
-            break;
-        }
 
-        if (g_Cap_50V.set_charge_voltage_USER > g_Cap_50V.p_range[g_Cap_50V.range_index].Volt_Value)
-        {
-            PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, g_Cap_50V.p_range[g_Cap_50V.range_index].Duty_Max);
-            Cap_Set_Volt_Internal(&g_Cap_50V, g_Cap_50V.p_range[g_Cap_50V.range_index].Volt_Value);
-            g_Cap_50V.cap_state = CAP_IS_CHARGING;
-        }
-        else
-        {
-            PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, g_Cap_50V.p_range[g_Cap_50V.range_index].Duty_Max);
-            Cap_Set_Volt_Internal(&g_Cap_50V, g_Cap_50V.set_charge_voltage_USER);
-            g_Cap_50V.cap_state = CAP_IS_CHARGING;
-            g_Cap_50V.charge_state = CAP_SET_FREE_CHARGE_STATE;
-            break;
-        }
+	case CAP_CONTROL_CHARGE_STATE:
 
-        g_Cap_50V.range_index++;
-        break;
-    }
-    case CAP_SET_FREE_CHARGE_STATE:
-    {
-        if (g_Cap_50V.cap_state != CAP_IS_FINISH_CHARGING)
-        {
-            break;
-        }
 
-        float set_duty_temp = ((float)g_Cap_50V.set_charge_voltage_USER * 100.0) / (120.0 + (float)g_Cap_50V.set_charge_voltage_USER);
+		db_cap_read(DB_ID_CAP_LV_STATE, &lv_state);
+		if(lv_state != CAP_IS_FINISH_CHARGING) break;
+
+		db_cap_read(DB_ID_CAP_LV_VOLT_SET, &lv_set_volt);
+
+		if(lv_set_volt > s_Cap_50V.p_range[s_Cap_50V.range_index].Volt_Value){
+            PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, s_Cap_50V.p_range[s_Cap_50V.range_index].Duty_Max);
+            Cap_Set_Volt_Internal(&s_Cap_50V, s_Cap_50V.p_range[s_Cap_50V.range_index].Volt_Value);
+
+            lv_state = CAP_IS_CHARGING;
+            db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+		}
+		else{
+            PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, s_Cap_50V.p_range[s_Cap_50V.range_index].Duty_Max);
+            Cap_Set_Volt_Internal(&s_Cap_50V, lv_set_volt);
+
+            lv_state = CAP_IS_CHARGING;
+            db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+            s_Cap_50V.charge_state = CAP_SET_FREE_CHARGE_STATE;
+            break;
+		}
+
+		s_Cap_50V.range_index++;
+
+		break;
+
+	case CAP_SET_FREE_CHARGE_STATE:
+
+		db_cap_read(DB_ID_CAP_HV_STATE, &lv_state);
+		if(lv_state != CAP_IS_FINISH_CHARGING) break;
+
+        float set_duty_temp = ((float)lv_set_volt * 100.0) / (120.0 + (float)lv_set_volt);
         uint16_t cap_50V_set_duty    = (set_duty_temp * 1.112641084) + 0.5;
 
         PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, cap_50V_set_duty);
-        g_Cap_50V.charge_state = CAP_IS_FREE_CHARGE_STATE;
+        s_Cap_50V.charge_state = CAP_IS_FREE_CHARGE_STATE;
         break;
-    }
 
-    case CAP_IS_FREE_CHARGE_STATE:
-    {
-        break;
-    }
+	case CAP_IS_FREE_CHARGE_STATE:
+		break;
 
-    default:
-        break;
-    }
+	default:
+		break;
+	}
 
-    s_Cap_50V.is_charge_on = g_Cap_50V.is_charge_on;
-
-    // if (s_Cap_50V.ADC_Value >= (s_Cap_50V.set_charge_voltage_ADC * 0.99))
-    // {
-    //     if ((s_Cap_50V.is_notified_enable == true) && (g_Cap_50V.charge_state == CAP_FREE_CHARGE_STATE))
-    //     {
-    //         UART_Printf(CMD_line_handle, "LV CAP FINISHED CHARGING TO %dV\n", g_Cap_50V.set_charge_voltage_USER);
-    //         UART_Send_String(CMD_line_handle, "> ");
-
-    //         g_Cap_50V.is_notified_enable = false;
-    //         s_Cap_50V.is_notified_enable = false;
-    //     }
-
-    //     g_Cap_50V.cap_state = CAP_IS_FINISH_CHARGING;
-    // }
 }
 
 static void Cap_Controller_Discharge_Monitor_50V(void)
 {
-	if (s_Cap_50V.is_discharge_on == false)
-	{
-        return;
-    }
+	bool lv_cmd_discharge = false;
+	CAP_State_t lv_state;
 
-    if (s_Cap_50V.ADC_Value <= 67)
-    {
-        if (s_Cap_50V.is_notified_enable == true)
-        {
+	db_cap_read(DB_ID_CAP_LV_CMD_DISCHARGE, &lv_cmd_discharge);
 
-            UART_Driver_SendString(CMD_line_handle,"LV CAP FINISHED RELEASING TO 0V\n\r");
-            Cap_Set_Discharge(&g_Cap_50V, false, false);
+	if(lv_cmd_discharge == false) return;
 
-            g_Cap_50V.is_notified_enable = false;
-            s_Cap_50V.is_notified_enable = false;
-        }
+	if(s_Cap_50V.raw_ADC_Value <= 60){
 
-        g_Cap_50V.cap_state = CAP_IS_FINISH_DISCHARGING;
-    }
+        UART_Driver_SendString(CMD_line_handle,"LV CAP FINISHED RELEASING TO 0V\n\r");
+        Cap_Set_Discharge(CAP_PRF_LV, false);
+
+        lv_state = CAP_IS_FINISH_DISCHARGING;
+        db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+	}
 }
 
-static uint16_t Cap_Calib_Calculate(Cap_Controller_Task_typedef* p_cap_x, uint16_t raw_voltage)
+static uint16_t Cap_Calib_Calculate(Cap_Control_t* p_cap_x, uint16_t raw_voltage)
 {
-    return raw_voltage / p_cap_x->calib.coefficient_value.average_value;
+    return raw_voltage / p_cap_x->calib_coefficient;
 }
 
-static uint16_t Cap_ADC_to_Volt(Cap_Controller_Task_typedef* p_cap_x, uint16_t ADC_value)
+static uint16_t Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value)
 {
-   return ADC_value * p_cap_x->calib.coefficient_value.average_value;
+   return ADC_value * p_cap_x->calib_coefficient;
 }
 
-static void Cap_Set_Volt_Internal(Cap_Controller_Task_typedef* p_cap_x, uint16_t set_voltage)
+static void Cap_Set_Volt_Internal(Cap_Control_t* p_cap_x, uint16_t set_voltage)
 {
     p_cap_x->set_charge_voltage_ADC = Cap_Calib_Calculate(p_cap_x, set_voltage);
 }

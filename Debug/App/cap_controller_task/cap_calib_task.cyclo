@@ -1,6 +1,0 @@
-../App/cap_controller_task/cap_calib_task.c:66:6:Calib_Task_Init	1
-../App/cap_controller_task/cap_calib_task.c:125:6:Calib_Task	16
-../App/cap_controller_task/cap_calib_task.c:262:6:Calib_Calculate_All	1
-../App/cap_controller_task/cap_calib_task.c:267:6:Calib_Calculate_HV	1
-../App/cap_controller_task/cap_calib_task.c:272:6:Calib_Calculate_LV	1
-../App/cap_controller_task/cap_calib_task.c:278:20:Charge_Cap_Procedure	1

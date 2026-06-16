@@ -95,6 +95,17 @@ void UART_Driver_SendString(UART_Driver_t* p_uart, const char *str)
     }
 }
 
+void UART_Driver_SendFSP(UART_Driver_t* p_uart,const char *str, uint8_t len)
+{
+	uint8_t udx;
+
+	for (udx = 0; udx < len; udx++)
+	{
+		UART_Driver_Write(p_uart, (uint8_t)(*str));
+	}
+
+}
+
 _Bool UART_Driver_IsDataAvailable(UART_Driver_t* p_uart)
 {
 
@@ -171,8 +182,6 @@ void UART_Driver_Flush(UART_Driver_t* p_uart)
 
 void UART_Driver_ISR(UART_Driver_t* p_uart)
 {
-
-
     // 1. XỬ LÝ CỜ LỖI ĐỘC LẬP (Đưa ra ngoài khối RXNE)
     if (LL_USART_IsActiveFlag_ORE(p_uart->handle))
     {

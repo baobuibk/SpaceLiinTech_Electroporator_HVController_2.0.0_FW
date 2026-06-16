@@ -17,12 +17,8 @@
 #include "../uart/ring_buffer.h"
 #include <stdint.h>
 
-
-
-
 #define UART6_BUFFER_SIZE    1024
 
-// Driver UART-Ringbuffer Struct
 typedef struct {
 
     USART_TypeDef* 		handle;
@@ -39,6 +35,7 @@ void UART_Driver_ISR(UART_Driver_t* p_uart);
 int  UART_Driver_Read(UART_Driver_t* p_uart);
 void UART_Driver_Write(UART_Driver_t* p_uart, uint8_t data);
 void UART_Driver_SendString(UART_Driver_t* p_uart, const char *str);
+void UART_Driver_SendFSP(UART_Driver_t* p_uart,const char *str, uint8_t len);
 _Bool UART_Driver_IsDataAvailable(UART_Driver_t* p_uart);
 uint16_t UART_Driver_TXNumFreeSlots(UART_Driver_t* p_uart);
 uint16_t UART_Driver_RXNumFreeSlots(UART_Driver_t* p_uart);

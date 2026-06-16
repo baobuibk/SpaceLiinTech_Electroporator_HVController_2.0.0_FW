@@ -25,11 +25,14 @@ SUBDIRS := \
 App \
 App/cap_controller_task \
 App/cmd_line_task \
+App/database \
+App/fsp_line_task \
 Core/Src \
 Core/Startup \
 Drivers/STM32F4xx_HAL_Driver/Src \
 MyDRV/cli/CLI_Setup \
 MyDRV/cli/CLI_Src \
+MyDRV/fsp \
 MyDRV/pid \
 MyDRV/pwm \
 MyDRV/scheduler \

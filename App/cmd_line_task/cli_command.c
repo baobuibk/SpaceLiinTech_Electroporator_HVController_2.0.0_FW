@@ -71,9 +71,9 @@ static void CMD_GET_CAP_ALL (EmbeddedCli *cli, char *args, void *context);
 // - binding: Callback function that handles the command.
 
 static const CliCommandBinding cliStaticBindings_internal[] = {
-    { NULL, "help",         "format: help",                                         false, NULL, CMD_Help },
-    { NULL, "reset",        "Reset MCU: reset",                                     false, NULL, CMD_Reset },             // Giữ từ ví dụ ban đầu
-    { NULL, "clr",          "Clears the console",                                   false, NULL, CMD_ClearCLI },          // Giữ từ ví dụ ban đầu
+    { NULL, "HELP",         "format: help",                                         false, NULL, CMD_Help },
+    { NULL, "RESET",        "Reset MCU: reset",                                     false, NULL, CMD_Reset },             // Giữ từ ví dụ ban đầu
+    { NULL, "CLR",          "Clears the console",                                   false, NULL, CMD_ClearCLI },          // Giữ từ ví dụ ban đầu
 
 
 	{ NULL,	"SET_CAP_VOLT_ALL", 	"format: SET_CAP_VOLT_ALL [HV_Volt] [LV_Volt]",		true,NULL,CMD_SET_CAP_VOLT_ALL},
@@ -149,13 +149,13 @@ static void	CMD_SET_CAP_VOLT_ALL(EmbeddedCli *cli, char *args, void *context){
 
 	uint8_t is_return = 0;
 
-	if (Cap_Get_is_Charge(&g_Cap_300V) == true)
+	if (Cap_Get_is_Charge(CAP_PRF_HV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> HV CAP IS CHARGING, PLEASE DISABLE CHARGING BEFORE SET NEW VOLT");
 		is_return = 1;
 	}
 
-	if (Cap_Get_is_Charge(&g_Cap_50V) == true)
+	if (Cap_Get_is_Charge(CAP_PRF_LV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> LV CAP IS CHARGING, PLEASE DISABLE CHARGING BEFORE SET NEW VOLT");
 		is_return = 1;
@@ -166,16 +166,16 @@ static void	CMD_SET_CAP_VOLT_ALL(EmbeddedCli *cli, char *args, void *context){
 		return ;
 	}
 
-	Cap_Set_Volt_All(receive_argm[0], receive_argm[1], true, true);
+	Cap_Set_Volt_All(receive_argm[0], receive_argm[1]);
 	embeddedCliPrint(cli,"\n\r> CMDLINE_OK");
 	return;
 
 }
 static void	CMD_SET_CAP_VOLT_HV (EmbeddedCli *cli, char *args, void *context){
-	if (g_is_calib_running == true)
-	{
-		return ;
-	}
+//	if (g_is_calib_running == true)
+//	{
+//		return ;
+//	}
 
 	int argc = embeddedCliGetTokenCount(args);
 	if(argc < 1) {
@@ -195,13 +195,13 @@ static void	CMD_SET_CAP_VOLT_HV (EmbeddedCli *cli, char *args, void *context){
 		return;
 	}
 
-	if (Cap_Get_is_Charge(&g_Cap_300V) == true)
+	if (Cap_Get_is_Charge(CAP_PRF_HV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> HV CAP IS CHARGING, PLEASE DISABLE CHARGING BEFORE SET NEW VOLT");
 		return ;
 	}
 
-	Cap_Set_Volt(&g_Cap_300V, receive_argm, true);
+	Cap_Set_Volt(CAP_PRF_HV, receive_argm);
 	embeddedCliPrint(cli,"\n\r> CMDLINE_OK");
 
 	return;
@@ -209,10 +209,10 @@ static void	CMD_SET_CAP_VOLT_HV (EmbeddedCli *cli, char *args, void *context){
 
 }
 static void CMD_SET_CAP_VOLT_LV (EmbeddedCli *cli, char *args, void *context){
-	if (g_is_calib_running == true)
-	{
-		return ;
-	}
+//	if (g_is_calib_running == true)
+//	{
+//		return ;
+//	}
 	int argc = embeddedCliGetTokenCount(args);
 	if(argc < 1) {
 		embeddedCliPrint(cli,"\n\r> CMDLINE_TOO_FEW_ARGS");
@@ -232,23 +232,23 @@ static void CMD_SET_CAP_VOLT_LV (EmbeddedCli *cli, char *args, void *context){
 		return;
 	}
 
-	if (Cap_Get_is_Charge(&g_Cap_50V) == true)
+	if (Cap_Get_is_Charge(CAP_PRF_LV) == true)
 	{
 		embeddedCliPrint(cli,"\n\r> LV CAP IS CHARGING, PLEASE DISABLE CHARGING BEFORE SET NEW VOLT");
 		return ;
 	}
 
-	Cap_Set_Volt(&g_Cap_50V, receive_argm, true);
+	Cap_Set_Volt(CAP_PRF_LV, receive_argm);
 	embeddedCliPrint(cli,"\n\r> CMDLINE_OK");
 	return;
 
 }
 static void CMD_SET_CAP_CONTROL (EmbeddedCli *cli, char *args, void *context){
 
-	if (g_is_calib_running == true)
-	{
-		return ;
-	}
+//	if (g_is_calib_running == true)
+//	{
+//		return ;
+//	}
 
 	int argc = embeddedCliGetTokenCount(args);
 	if(argc < 2) {
@@ -280,8 +280,8 @@ static void CMD_SET_CAP_CONTROL (EmbeddedCli *cli, char *args, void *context){
 
 	if (receive_argm[0] == 1)
 	{
-		set_volt 	 = Cap_Get_Set_Volt(&g_Cap_300V);
-		measure_volt = Cap_Measure_Volt(&g_Cap_300V);
+		set_volt 	 = Cap_Get_Set_Volt(CAP_PRF_HV);
+		measure_volt = Cap_Measure_Volt(CAP_PRF_HV);
 
 		if (set_volt < measure_volt)
 		{
@@ -292,8 +292,8 @@ static void CMD_SET_CAP_CONTROL (EmbeddedCli *cli, char *args, void *context){
 
 	if (receive_argm[1] == 1)
 	{
-		set_volt 	 = Cap_Get_Set_Volt(&g_Cap_50V);
-		measure_volt = Cap_Measure_Volt(&g_Cap_50V);
+		set_volt 	 = Cap_Get_Set_Volt(CAP_PRF_LV);
+		measure_volt = Cap_Measure_Volt(CAP_PRF_LV);
 
 		if (set_volt < measure_volt)
 		{
@@ -307,8 +307,7 @@ static void CMD_SET_CAP_CONTROL (EmbeddedCli *cli, char *args, void *context){
 		return ;
 	}
 
-
-	Cap_Set_Charge_All(receive_argm[0], receive_argm[1], true, true);
+	Cap_Set_Charge_All(receive_argm[0], receive_argm[1],true,true);
 	embeddedCliPrint(cli,"\n\r> CMDLINE_OK");
 
 	return ;
@@ -339,7 +338,7 @@ static void CMD_SET_CAP_RELEASE (EmbeddedCli *cli, char *args, void *context){
 		embeddedCliPrint(cli,"\n\r> CMDLINE_INVALID_ARG");
 		return;
 	}
-	Cap_Set_Discharge_All(receive_argm[0], receive_argm[1], true, true);
+	Cap_Set_Discharge_All(receive_argm[0], receive_argm[1]);
 	embeddedCliPrint(cli,"CMDLINE_OK\n\r");
 	return ;
 
@@ -354,8 +353,8 @@ static void CMD_GET_CAP_VOLT (EmbeddedCli *cli, char *args, void *context){
 	}
 
 	uint16_t hv_cap_set_voltage, lv_cap_set_voltage;
-	hv_cap_set_voltage = Cap_Get_Set_Volt(&g_Cap_300V);
-	lv_cap_set_voltage = Cap_Get_Set_Volt(&g_Cap_50V);
+	hv_cap_set_voltage = Cap_Get_Set_Volt(CAP_PRF_HV);
+	lv_cap_set_voltage = Cap_Get_Set_Volt(CAP_PRF_LV);
 
 	sprintf(msg, "\n\r> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV", hv_cap_set_voltage, lv_cap_set_voltage);
 	embeddedCliPrint(cli,msg);
@@ -368,7 +367,7 @@ static void CMD_GET_CAP_CONTROL (EmbeddedCli *cli, char *args, void *context){
 		embeddedCliPrint(cli,"\n\r> CMDLINE_TOO_MANY_ARGS");
 		return;
 	}
-	if (Cap_Get_is_Charge(&g_Cap_300V) == true)
+	if (Cap_Get_is_Charge(CAP_PRF_HV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> HV CAP IS CHARGING");
 	}
@@ -377,7 +376,7 @@ static void CMD_GET_CAP_CONTROL (EmbeddedCli *cli, char *args, void *context){
 		embeddedCliPrint(cli, "\n\r> HV CAP IS NOT CHARGING");
 	}
 
-	if (Cap_Get_is_Charge(&g_Cap_50V) == true)
+	if (Cap_Get_is_Charge(CAP_PRF_LV) == true)
 	{
 		embeddedCliPrint(cli,"\n\r> LV CAP IS CHARGING");
 	}
@@ -395,7 +394,7 @@ static void	CMD_GET_CAP_RELEASE (EmbeddedCli *cli, char *args, void *context){
 		return;
 	}
 
-	if (Cap_Get_is_Discharge(&g_Cap_300V) == true)
+	if (Cap_Get_is_Discharge(CAP_PRF_HV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> HV CAP IS DISCHARGING");
 	}
@@ -404,7 +403,7 @@ static void	CMD_GET_CAP_RELEASE (EmbeddedCli *cli, char *args, void *context){
 		embeddedCliPrint(cli, "\n\r> HV CAP IS NOT DISCHARGING");
 	}
 
-	if (Cap_Get_is_Discharge(&g_Cap_50V) == true)
+	if (Cap_Get_is_Discharge(CAP_PRF_LV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> LV CAP IS DISCHARGING");
 	}
@@ -425,13 +424,13 @@ static void CMD_GET_CAP_ALL (EmbeddedCli *cli, char *args, void *context){
 
 	uint16_t hv_cap_set_voltage, lv_cap_set_voltage;
 
-	hv_cap_set_voltage = Cap_Get_Set_Volt(&g_Cap_300V);
-	lv_cap_set_voltage = Cap_Get_Set_Volt(&g_Cap_50V);
+	hv_cap_set_voltage = Cap_Get_Set_Volt(CAP_PRF_HV);
+	lv_cap_set_voltage = Cap_Get_Set_Volt(CAP_PRF_LV);
 
 	sprintf(msg, "\n\r> HV CAP IS SET AT: %dV, LV CAP IS SET AT: %dV", hv_cap_set_voltage, lv_cap_set_voltage);
 	embeddedCliPrint(cli,msg);
 
-	if (Cap_Get_is_Charge(&g_Cap_300V) == true)
+	if (Cap_Get_is_Charge(CAP_PRF_HV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> HV CAP IS CHARGING");
 	}
@@ -440,7 +439,7 @@ static void CMD_GET_CAP_ALL (EmbeddedCli *cli, char *args, void *context){
 		embeddedCliPrint(cli, "\n\r> HV CAP IS NOT CHARGING");
 	}
 
-	if (Cap_Get_is_Charge(&g_Cap_50V) == true)
+	if (Cap_Get_is_Charge(CAP_PRF_LV) == true)
 	{
 		embeddedCliPrint(cli,"\n\r> LV CAP IS CHARGING");
 	}
@@ -449,7 +448,7 @@ static void CMD_GET_CAP_ALL (EmbeddedCli *cli, char *args, void *context){
 		embeddedCliPrint(cli, "\n\r> LV CAP IS NOT CHARGING");
 	}
 
-	if (Cap_Get_is_Discharge(&g_Cap_300V) == true)
+	if (Cap_Get_is_Discharge(CAP_PRF_HV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> HV CAP IS DISCHARGING");
 	}
@@ -458,7 +457,7 @@ static void CMD_GET_CAP_ALL (EmbeddedCli *cli, char *args, void *context){
 		embeddedCliPrint(cli, "\n\r> HV CAP IS NOT DISCHARGING");
 	}
 
-	if (Cap_Get_is_Discharge(&g_Cap_50V) == true)
+	if (Cap_Get_is_Discharge(CAP_PRF_LV) == true)
 	{
 		embeddedCliPrint(cli, "\n\r> LV CAP IS DISCHARGING");
 	}

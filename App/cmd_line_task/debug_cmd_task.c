@@ -39,10 +39,7 @@ void CMD_Line_Task_Init(void){
 
 	p_DEBUG_CLI = SystemCLI_Init(&DEBUG_UART, g_DEBUG_CMD_line_buffer, sizeof(g_DEBUG_CMD_line_buffer));
 
-//	UART_Driver_SendString(&DEBUG_UART, "B\n");
-
 	UART_Driver_SendString(&DEBUG_UART, "HELLO\n\r");
-
 
 	CMD_line_handle = &DEBUG_UART;
 

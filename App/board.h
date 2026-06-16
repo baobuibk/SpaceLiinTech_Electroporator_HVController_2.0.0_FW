@@ -46,21 +46,24 @@
 #define DISCHARGE_50V_PORT      GPIOB
 #define DISCHARGE_50V_PIN       LL_GPIO_PIN_4
 
- #define OVP_PORT            	 GPIOC
- #define OVP_300_PIN             LL_GPIO_PIN_3
- #define OVP_50_PIN              LL_GPIO_PIN_1
+#define OVP_PORT            	 GPIOC
+#define OVP_300_PIN             LL_GPIO_PIN_3
+#define OVP_300_EXTI			LL_EXTI_LINE_3
+
+#define OVP_50_PIN              LL_GPIO_PIN_1
+#define OVP_50_EXTI				LL_EXTI_LINE_1
 /***********************************************/
 
 /*********************UART**********************/
 #define DEBUG_UART_HANDLE       USART6
 #define DEBUG_UART_IRQ          USART6_IRQn
 
-//#define GPP_UART_HANDLE       	USART1
-//#define GPP_UART_IRQ          	USART1_IRQn
-//
-//#define GPP_TX_SIZE			    128
-//#define	GPP_RX_SIZE			    128
-//#define FSP_BUF_LEN				128
+#define GPP_UART_HANDLE       	USART1
+#define GPP_UART_IRQ          	USART1_IRQn
+
+#define GPP_TX_SIZE			    128
+#define	GPP_RX_SIZE			    128
+#define FSP_BUF_LEN				128
 
 /*********************SPI***********************/
 //#define FRAM_SPI_HANDLE         SPI3

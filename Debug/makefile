@@ -13,11 +13,14 @@ RM := rm -rf
 -include MyDRV/scheduler/subdir.mk
 -include MyDRV/pwm/subdir.mk
 -include MyDRV/pid/subdir.mk
+-include MyDRV/fsp/subdir.mk
 -include MyDRV/cli/CLI_Src/subdir.mk
 -include MyDRV/cli/CLI_Setup/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
+-include App/fsp_line_task/subdir.mk
+-include App/database/subdir.mk
 -include App/cmd_line_task/subdir.mk
 -include App/cap_controller_task/subdir.mk
 -include App/subdir.mk
