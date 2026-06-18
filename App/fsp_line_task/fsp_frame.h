@@ -228,7 +228,7 @@ typedef union _FSP_Payload_Frame_typedef_
 
 typedef struct _FSP_Payload_typedef_
 {
-	uint8_t						CMD;
+	FSP_CMD_typedef				CMD;
 	FSP_Payload_Frame_typedef 	Payload;
 
 } FSP_Payload;

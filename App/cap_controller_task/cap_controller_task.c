@@ -275,10 +275,11 @@ void Cap_Controller_Charge_Task(void*)
 	}
 
 	if(hv_OVV_flag == true){
-		LL_GPIO_ResetOutputPin(FLYBACK_SD1_PORT, FLYBACK_SD1_PIN);
+		s_Cap_300V.charge_PWM_duty = 0;
+		Flyback_Set_Duty(&s_Cap_300V, 0);
 	}
 	else if(hv_OVV_flag == false){
-		LL_GPIO_SetOutputPin(FLYBACK_SD1_PORT, FLYBACK_SD1_PIN);
+
 	}
 
 	//---PROFILE 50V-----
@@ -324,10 +325,11 @@ void Cap_Controller_Charge_Task(void*)
 	}
 
 	if(lv_OVV_flag == true){
-		LL_GPIO_ResetOutputPin(FLYBACK_SD2_PORT, FLYBACK_SD2_PIN);
+		s_Cap_50V.charge_PWM_duty = 0;
+		Flyback_Set_Duty(&s_Cap_50V, 0);
 	}
 	else if(lv_OVV_flag == false){
-		LL_GPIO_SetOutputPin(FLYBACK_SD2_PORT, FLYBACK_SD2_PIN);
+
 	}
 
 }
@@ -910,7 +912,6 @@ static void Cap_Controller_Discharge_Monitor_300V(void)
         UART_Driver_SendString(CMD_line_handle,"HV CAP FINISHED RELEASING TO 0V\n\r");
         Cap_Set_Discharge(CAP_PRF_HV, false);
 
-
         hv_state = CAP_IS_FINISH_DISCHARGING;
         db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
 	}
@@ -986,7 +987,7 @@ static void Cap_Controller_Charge_Monitor_50V(void)
 
 	case CAP_SET_FREE_CHARGE_STATE:
 
-		db_cap_read(DB_ID_CAP_HV_STATE, &lv_state);
+		db_cap_read(DB_ID_CAP_LV_STATE, &lv_state);
 		if(lv_state != CAP_IS_FINISH_CHARGING) break;
 
         float set_duty_temp = ((float)lv_set_volt * 100.0) / (120.0 + (float)lv_set_volt);

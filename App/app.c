@@ -6,11 +6,6 @@
 #include "cap_controller_task.h"
 #include "uart_driver.h"
 
-//UART_Driver_t*		CMD_line_handle;
-//UART_Driver_t  		DEBUG_UART;
-//uint8_t               g_DEBUG_UART_TX_buffer[512];
-//uint8_t               g_DEBUG_UART_RX_buffer[64];
-
 
 static void Status_Led(void*);
 int test;
@@ -25,7 +20,6 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                         {&FSP_Line_Task,				(void *) 0,	20, 	0, 	true},
                         {&Debug_CMD_Line_Task,			(void *) 0,	50,		0, 	true},
                         {&Status_Led,					(void *) 0,	100000,	0,	true},
-
                 };
 
 void App_Main(void)
@@ -39,7 +33,6 @@ void App_Main(void)
 
     while (1)
     {
-
         SchedulerRun();
     }
 }
