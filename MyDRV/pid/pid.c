@@ -34,14 +34,18 @@ void PID_Init(PID_TypeDef *uPID)
 	}
 }
 
+#define PID_DENTA_MAX 2
 /* :::::::::: PID Compute :::::::::: */
 bool PID_Compute(PID_TypeDef *uPID)
 {
 
-	int16_t input;
-	int16_t error;
-	int16_t dInput;
-	int16_t output;
+	int32_t input;
+	int32_t error;
+	int32_t dInput;
+	int32_t output;
+
+	int32_t last_output_sum;
+
 	
 	/* ~~~~~~~~~~ Check PID mode ~~~~~~~~~~ */
 	if (!uPID->PID_Mode)
@@ -54,14 +58,27 @@ bool PID_Compute(PID_TypeDef *uPID)
 	error   = *uPID->MySetpoint - input;
 	dInput  = (input - uPID->LastInput);
 	
+	uPID->LastInput = input;
+	last_output_sum = uPID->OutputSum;
 	uPID->OutputSum     += (uPID->Ki * error);
-	
+
 	/* ..... Add Proportional on Measurement, if P_ON_M is specified ..... */
 	if (!uPID->PON_Type)
 	{
 		uPID->OutputSum -= uPID->Kp * dInput;
 	}
 	
+
+	if ((uPID->OutputSum - last_output_sum) > PID_DENTA_MAX)
+	{
+		uPID->OutputSum = last_output_sum + PID_DENTA_MAX;
+	}
+	else if((last_output_sum - uPID->OutputSum ) > PID_DENTA_MAX)
+	{
+		uPID -> OutputSum = last_output_sum - PID_DENTA_MAX;
+	}
+
+
 	if (uPID->OutputSum > uPID->Output_Max)
 	{
 		uPID->OutputSum = uPID->Output_Max;
@@ -70,7 +87,6 @@ bool PID_Compute(PID_TypeDef *uPID)
 	{
 		uPID->OutputSum = uPID->Output_Min;
 	}
-	else { }
 	
 	/* ..... Add Proportional on Error, if P_ON_E is specified ..... */
 	if (uPID->PON_Type)

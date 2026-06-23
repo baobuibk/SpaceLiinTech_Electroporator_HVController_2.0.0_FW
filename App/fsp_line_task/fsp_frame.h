@@ -23,6 +23,10 @@ typedef enum _FSP_CMD_typedef_
 	FSP_CMD_GET_CAP_CONTROL,
 	FSP_CMD_GET_CAP_ALL,
 	FSP_CMD_GET_OVV_FLAG,
+	FSP_CMD_GET_CAP_FINISH_CHARGE,
+	FSP_CMD_GET_CAP_FINISH_DISCHARGE,
+
+	FSP_CMD_MEASURE_VOLT,
 
 	FSP_CMD_GET_SENSOR_GYRO,
 	FSP_CMD_GET_SENSOR_ACCEL,
@@ -87,6 +91,23 @@ typedef struct _SET_DISCHARGE_ {
 
 }SET_DISCHARGE;
 
+
+typedef struct _GET_CHARGE_FINISH{
+
+	uint8_t 	HV_charge_finish_flag;
+	uint8_t 	LV_charge_finish_flag;
+
+}GET_CHARGE_FINISH;
+
+
+typedef struct _GET_DISCHARGE_FINISH{
+
+	uint8_t 	HV_discharge_finish_flag;
+	uint8_t 	LV_discharge_finish_flag;
+
+}GET_DISCHARGE_FINISH;
+
+
 typedef struct _GET_OVV_FLAG_ {
 
 	uint8_t		HV_OVV_flag;
@@ -121,9 +142,16 @@ typedef struct _GET_CAP_RELEASE
 	uint8_t		HV_Volt_Discharge;
 	uint8_t		LV_Volt_Discharge;
 
-}GET_CAP_RELEASEL;
+}GET_CAP_RELEASE;
 
+typedef struct _MEASURE_VOLT_
+{
+	uint8_t 	HV_raw_volt_high;
+	uint8_t 	HV_raw_volt_low;
+	uint8_t 	LV_raw_volt_high;
+	uint8_t 	LV_raw_volt_low;
 
+}MEASURE_VOLT;
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Sensor Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -132,7 +160,6 @@ typedef struct _GET_SENSOR_GYRO_
 	uint8_t 	gyro_x[2];
 	uint8_t 	gyro_y[2];
 	uint8_t 	gyro_z[2];
-
 } GET_SENSOR_GYRO;
 
 typedef struct _GET_SENSOR_ACCEL_
@@ -206,11 +233,16 @@ typedef union _FSP_Payload_Frame_typedef_
 	SET_CHARGE			set_charge;
 	SET_DISCHARGE		set_discharge;
 
+	GET_CHARGE_FINISH	finish_charge_flag;
+	GET_DISCHARGE_FINISH finish_discharge_flag;
+
 	GET_OVV_FLAG		get_ovv_flag;
 
 	GET_CAP_ALL			get_cap_all;
 	GET_CAP_CONTROL		get_cap_control;
-	GET_CAP_RELEASEL	get_cap_release;
+	GET_CAP_RELEASE		get_cap_release;
+
+	MEASURE_VOLT 		measure_volt;
 
 	/* :::::::::: I2C Sensor Command :::::::: */
 	GET_SENSOR_GYRO							get_sensor_gyro;

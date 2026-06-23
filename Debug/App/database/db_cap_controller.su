@@ -1,3 +1,0 @@
-../App/database/db_cap_controller.c:41:6:db_cap_init	8	static
-../App/database/db_cap_controller.c:52:6:db_cap_read	16	static
-../App/database/db_cap_controller.c:61:6:db_cap_write	16	static

@@ -26,6 +26,7 @@
 #include <cli/CLI_Src/embedded_cli.h>
 #include <cli/CLI_Setup/cli_setup.h>
 #include "cli_command.h"
+#include "fsp.h"
 //#include "spi.h"
 
 

@@ -74,15 +74,15 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_OVV_FLAG:
 	{
-		uint8_t hv_ovv_flag;
-		uint8_t lv_ovv_flag;
+		bool hv_ovv_flag;
+		bool lv_ovv_flag;
 
 		db_cap_read(DB_ID_CAP_HV_OVV_FLAG, &hv_ovv_flag);
 		db_cap_read(DB_ID_CAP_LV_OVV_FLAG, &lv_ovv_flag);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_OVV_FLAG;
-		ps_FSP_TX -> Payload.get_ovv_flag.HV_OVV_flag = hv_ovv_flag;
-		ps_FSP_TX -> Payload.get_ovv_flag.LV_OVV_flag = lv_ovv_flag;
+		ps_FSP_TX -> Payload.get_ovv_flag.HV_OVV_flag = (uint8_t) hv_ovv_flag;
+		ps_FSP_TX -> Payload.get_ovv_flag.LV_OVV_flag = (uint8_t) lv_ovv_flag;
 
 		fsp_print(3);
 
@@ -91,8 +91,8 @@ uint8_t FSP_Line_Process(void)
 	case FSP_CMD_GET_CAP_ALL:
 	{
 		uint16_t hv_set_volt, lv_set_volt;
-		uint8_t	hv_cmd_charge, hv_cmd_discharge;
-		uint8_t	lv_cmd_charge, lv_cmd_discharge;
+		bool	hv_cmd_charge, hv_cmd_discharge;
+		bool	lv_cmd_charge, lv_cmd_discharge;
 
 		hv_set_volt = Cap_Get_Set_Volt(CAP_PRF_HV);
 		lv_set_volt = Cap_Get_Set_Volt(CAP_PRF_LV);
@@ -110,39 +110,62 @@ uint8_t FSP_Line_Process(void)
 		ps_FSP_TX -> Payload.get_cap_all.LV_Volt_High = (uint8_t)(hv_set_volt >> 8);
 		ps_FSP_TX -> Payload.get_cap_all.Lv_Volt_Low = (uint8_t)(hv_set_volt & 0xFF);
 
-		ps_FSP_TX -> Payload.get_cap_all.HV_Volt_Charge = hv_cmd_charge;
-		ps_FSP_TX -> Payload.get_cap_all.HV_Volt_Discharge = hv_cmd_discharge;
+		ps_FSP_TX -> Payload.get_cap_all.HV_Volt_Charge =(uint8_t) hv_cmd_charge;
+		ps_FSP_TX -> Payload.get_cap_all.HV_Volt_Discharge = (uint8_t) hv_cmd_discharge;
 
-		ps_FSP_TX -> Payload.get_cap_all.LV_Volt_Charge = lv_cmd_charge;
-		ps_FSP_TX -> Payload.get_cap_all.LV_Volt_Discharge = lv_cmd_discharge;
+		ps_FSP_TX -> Payload.get_cap_all.LV_Volt_Charge = (uint8_t) lv_cmd_charge;
+		ps_FSP_TX -> Payload.get_cap_all.LV_Volt_Discharge = (uint8_t) lv_cmd_discharge;
 
 		fsp_print(9);
+		
+		return 1;
 	}
 	case FSP_CMD_GET_CAP_CONTROL:
 	{
-		uint8_t	hv_cmd_charge, lv_cmd_charge;
+		bool	hv_cmd_charge, lv_cmd_charge;
 
 		hv_cmd_charge = Cap_Get_is_Charge(CAP_PRF_HV);
 		lv_cmd_charge = Cap_Get_is_Charge(CAP_PRF_LV);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_CAP_CONTROL;
-		ps_FSP_TX -> Payload.get_cap_control.HV_Volt_Charge = hv_cmd_charge;
-		ps_FSP_TX -> Payload.get_cap_control.LV_Volt_Charge = lv_cmd_charge;
+		ps_FSP_TX -> Payload.get_cap_control.HV_Volt_Charge = (uint8_t) hv_cmd_charge;
+		ps_FSP_TX -> Payload.get_cap_control.LV_Volt_Charge = (uint8_t) lv_cmd_charge;
 
 		fsp_print(3);
+
+		return 1;
 	}
 	case FSP_CMD_GET_CAP_RELEASE:
 	{
-		uint8_t	hv_cmd_discharge, lv_cmd_discharge;
+		bool	hv_cmd_discharge, lv_cmd_discharge;
 
 		hv_cmd_discharge = Cap_Get_is_Discharge(CAP_PRF_HV);
 		lv_cmd_discharge = Cap_Get_is_Discharge(CAP_PRF_LV);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_CAP_CONTROL;
-		ps_FSP_TX -> Payload.get_cap_release.HV_Volt_Discharge = hv_cmd_discharge;
-		ps_FSP_TX -> Payload.get_cap_release.LV_Volt_Discharge = lv_cmd_discharge;
+		ps_FSP_TX -> Payload.get_cap_release.HV_Volt_Discharge = (uint8_t) hv_cmd_discharge;
+		ps_FSP_TX -> Payload.get_cap_release.LV_Volt_Discharge = (uint8_t) lv_cmd_discharge;
 
 		fsp_print(3);
+
+		return 1;
+	}
+	case FSP_CMD_MEASURE_VOLT:
+	{
+		uint16_t hv_volt, lv_volt = 0;
+		db_cap_read(DB_ID_CAP_HV_VOLT_RAW, &hv_volt);
+		db_cap_read(DB_ID_CAP_LV_VOLT_RAW, &lv_volt);
+
+		ps_FSP_TX -> CMD = FSP_CMD_MEASURE_VOLT;
+		ps_FSP_TX -> Payload.measure_volt.HV_raw_volt_high = (uint8_t)(hv_volt >> 8);
+		ps_FSP_TX -> Payload.measure_volt.HV_raw_volt_low = (uint8_t)(hv_volt & 0xFF);
+		ps_FSP_TX -> Payload.measure_volt.LV_raw_volt_high = (uint8_t)(lv_volt >> 8);
+		ps_FSP_TX -> Payload.measure_volt.LV_raw_volt_low = (uint8_t)(lv_volt & 0xFF);
+
+		fsp_print(5);
+
+		return 1;
+
 	}
 	default:
 		return 0;

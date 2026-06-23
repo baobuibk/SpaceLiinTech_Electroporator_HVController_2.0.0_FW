@@ -266,7 +266,7 @@ void ADC_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-	UART_Driver_ISR(&GPP_UART);
+//	UART_Driver_ISR(&GPP_UART);
 
   /* USER CODE END USART1_IRQn 0 */
   /* USER CODE BEGIN USART1_IRQn 1 */
