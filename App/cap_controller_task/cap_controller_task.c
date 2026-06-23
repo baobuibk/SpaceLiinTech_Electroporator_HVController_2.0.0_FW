@@ -10,6 +10,10 @@
 
 #include "pid.h"
 #include "pwm.h"
+#include "crc.h"
+#include "fsp.h"
+
+//#include "fsp_frame.h"
 #include "cap_controller_task.h"
 #include "db_cap_controller.h"
 
@@ -21,7 +25,7 @@
 Charge_Range_t Cap_300V_charge_range[CAP_300V_CHARNGE_RANGE_MAX] =
 {
     {
-        .Volt_Value = 30,
+        .Volt_Value = 20,
         .Duty_Max = 10,
     },
     {
@@ -69,6 +73,7 @@ Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
         .Volt_Value = 20,
         .Duty_Max = 15,
     },
+
     {
         .Volt_Value = 30,
         .Duty_Max = 20,
@@ -79,9 +84,42 @@ Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
     },
     {
         .Volt_Value = 50,
-        .Duty_Max = 20,
+        .Duty_Max = 10,
     }
 };
+
+//#define CAP_50V_CHARNGE_RANGE_MAX 7
+//Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
+//{
+//    {
+//        .Volt_Value = 10,
+//        .Duty_Max = 10,
+//    },
+//    {
+//        .Volt_Value = 15,
+//        .Duty_Max = 10,
+//    },
+//    {
+//        .Volt_Value = 20,
+//        .Duty_Max = 10,
+//    },
+//    {
+//        .Volt_Value = 25,
+//        .Duty_Max = 10,
+//    },
+//    {
+//        .Volt_Value = 30,
+//        .Duty_Max = 10,
+//    },
+//    {
+//        .Volt_Value = 40,
+//        .Duty_Max = 10,
+//    },
+//    {
+//        .Volt_Value = 50,
+//        .Duty_Max = 10,
+//    }
+//};
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 static Cap_Control_t s_Cap_300V = {
@@ -153,6 +191,8 @@ static uint16_t Cap_Calib_Calculate(Cap_Control_t* p_cap_x, uint16_t raw_voltage
 static uint16_t Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value);
 static void Cap_Set_Volt_Internal(Cap_Control_t* p_cap_x, uint16_t set_voltage);
 
+//static void fsp_print(uint8_t packet_length);
+
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 /* :::::::::: Cap Controller Init :::::::: */
@@ -215,7 +255,7 @@ void Cap_Controller_Init(void)
     uint32_t ADC_Sampling_Time = LL_ADC_SAMPLINGTIME_480CYCLES;
     Cap_ADC_Init(ADC_Sampling_Time);
 
-    uint32_t PWM_300V_Freq = 60000, PWM_50V_Freq = 60000;
+    uint32_t PWM_300V_Freq = 70000, PWM_50V_Freq = 70000;
     Cap_PWM_Init(PWM_300V_Freq, PWM_50V_Freq);
 
     Cap_Discharge_Init();
@@ -254,6 +294,12 @@ void Cap_Controller_Charge_Task(void*)
 					char msg[128];
 					sprintf(msg,"HV CAP FINISHED CHARGING TO %dV\n\r", hv_set_volt);
 					UART_Driver_SendString(CMD_line_handle,msg);
+
+//					ps_FSP_TX -> CMD = FSP_CMD_GET_CAP_FINISH_CHARGE;
+//					ps_FSP_TX -> Payload.finish_charge_flag.HV_charge_finish_flag = true;
+//					ps_FSP_TX -> Payload.finish_charge_flag.LV_charge_finish_flag = false;
+//
+//					fsp_print(3);
 
 					s_Cap_300V.is_notified_on = false;
 				}
@@ -298,11 +344,16 @@ void Cap_Controller_Charge_Task(void*)
 	if (lv_cmd_charge == true){
 		if(s_Cap_50V.raw_ADC_Value >= (s_Cap_50V.set_charge_voltage_ADC*0.99)){
 			if(s_Cap_50V.charge_state == CAP_SET_FREE_CHARGE_STATE){
-
 				if(s_Cap_50V.is_notified_on == true){
 					char msg[128];
 					sprintf(msg,"LV CAP FINISHED CHARGING TO %dV\n\r", lv_set_volt);
 					UART_Driver_SendString(CMD_line_handle,msg);
+
+//					ps_FSP_TX -> CMD = FSP_CMD_GET_CAP_FINISH_CHARGE;
+//					ps_FSP_TX -> Payload.finish_charge_flag.HV_charge_finish_flag = false;
+//					ps_FSP_TX -> Payload.finish_charge_flag.LV_charge_finish_flag = true;
+//
+//					fsp_print(3);
 
 					s_Cap_50V.is_notified_on = false;
 				}
@@ -353,7 +404,6 @@ void Cap_Set_Volt(Cap_Profile_t prf_cap_x, uint16_t set_voltage)
 
 void Cap_Set_Volt_All(uint16_t HV_set_voltage, uint16_t LV_set_voltage)
 {
-
     db_cap_write(DB_ID_CAP_HV_VOLT_SET, &HV_set_voltage);
 
     db_cap_write(DB_ID_CAP_LV_VOLT_SET, &LV_set_voltage);
@@ -914,6 +964,13 @@ static void Cap_Controller_Discharge_Monitor_300V(void)
 
         hv_state = CAP_IS_FINISH_DISCHARGING;
         db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+
+//		ps_FSP_TX -> CMD = FSP_CMD_GET_CAP_FINISH_DISCHARGE;
+//		ps_FSP_TX -> Payload.finish_discharge_flag.HV_discharge_finish_flag = true;
+//		ps_FSP_TX -> Payload.finish_discharge_flag.LV_discharge_finish_flag = false;
+//
+//		fsp_print(3);
+
 	}
 
 }
@@ -977,6 +1034,7 @@ static void Cap_Controller_Charge_Monitor_50V(void)
 
             lv_state = CAP_IS_CHARGING;
             db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+
             s_Cap_50V.charge_state = CAP_SET_FREE_CHARGE_STATE;
             break;
 		}
@@ -990,11 +1048,11 @@ static void Cap_Controller_Charge_Monitor_50V(void)
 		db_cap_read(DB_ID_CAP_LV_STATE, &lv_state);
 		if(lv_state != CAP_IS_FINISH_CHARGING) break;
 
-        float set_duty_temp = ((float)lv_set_volt * 100.0) / (120.0 + (float)lv_set_volt);
-        uint16_t cap_50V_set_duty    = (set_duty_temp * 1.112641084) + 0.5;
-
-        PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, cap_50V_set_duty);
-        s_Cap_50V.charge_state = CAP_IS_FREE_CHARGE_STATE;
+//        float set_duty_temp = ((float)lv_set_volt * 100.0) / (120.0 + (float)lv_set_volt);
+//        uint16_t cap_50V_set_duty    = (set_duty_temp * 1.112641084) + 0.5;
+//
+//        PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, cap_50V_set_duty);
+//        s_Cap_50V.charge_state = CAP_IS_FREE_CHARGE_STATE;
         break;
 
 	case CAP_IS_FREE_CHARGE_STATE:
@@ -1022,6 +1080,12 @@ static void Cap_Controller_Discharge_Monitor_50V(void)
 
         lv_state = CAP_IS_FINISH_DISCHARGING;
         db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+
+//		ps_FSP_TX -> CMD = FSP_CMd_GET_CAP_FINISH_DISCHARGE;
+//		ps_FSP_TX -> Payload.finish_discharge_flag.HV_discharge_finish_flag = false;
+//		ps_FSP_TX -> Payload.finish_discharge_flag.LV_discharge_finish_flag = true;
+//
+//		fsp_print(3);
 	}
 }
 
@@ -1032,13 +1096,34 @@ static uint16_t Cap_Calib_Calculate(Cap_Control_t* p_cap_x, uint16_t raw_voltage
 
 static uint16_t Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value)
 {
-   return ADC_value * p_cap_x->calib_coefficient;
+   return (uint16_t) (ADC_value * p_cap_x->calib_coefficient);
 }
 
 static void Cap_Set_Volt_Internal(Cap_Control_t* p_cap_x, uint16_t set_voltage)
 {
     p_cap_x->set_charge_voltage_ADC = Cap_Calib_Calculate(p_cap_x, set_voltage);
 }
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FSP ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+//static void fsp_print(uint8_t packet_length)
+//{
+//	s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
+//	s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
+//	s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
+//	s_FSP_TX_Packet.length 		= packet_length;
+//	s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+//	s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
+//	s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
+//
+//	uint8_t encoded_frame[25] = { 0 };
+//	uint8_t frame_len;
+//	fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
+//
+//	UART_Driver_SendFSP(&GPP_UART, (char*)encoded_frame , frame_len);
+//}
+
+
+
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 

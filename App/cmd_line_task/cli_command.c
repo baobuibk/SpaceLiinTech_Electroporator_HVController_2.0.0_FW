@@ -172,10 +172,6 @@ static void	CMD_SET_CAP_VOLT_ALL(EmbeddedCli *cli, char *args, void *context){
 
 }
 static void	CMD_SET_CAP_VOLT_HV (EmbeddedCli *cli, char *args, void *context){
-//	if (g_is_calib_running == true)
-//	{
-//		return ;
-//	}
 
 	int argc = embeddedCliGetTokenCount(args);
 	if(argc < 1) {
@@ -205,7 +201,6 @@ static void	CMD_SET_CAP_VOLT_HV (EmbeddedCli *cli, char *args, void *context){
 	embeddedCliPrint(cli,"\n\r> CMDLINE_OK");
 
 	return;
-
 
 }
 static void CMD_SET_CAP_VOLT_LV (EmbeddedCli *cli, char *args, void *context){
@@ -245,10 +240,7 @@ static void CMD_SET_CAP_VOLT_LV (EmbeddedCli *cli, char *args, void *context){
 }
 static void CMD_SET_CAP_CONTROL (EmbeddedCli *cli, char *args, void *context){
 
-//	if (g_is_calib_running == true)
-//	{
-//		return ;
-//	}
+
 
 	int argc = embeddedCliGetTokenCount(args);
 	if(argc < 2) {
