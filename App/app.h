@@ -27,6 +27,7 @@
 #include <cli/CLI_Setup/cli_setup.h>
 #include "cli_command.h"
 #include "fsp.h"
+#include "fsp_frame.h"
 //#include "spi.h"
 
 
@@ -43,7 +44,6 @@ typedef enum
 {
     CAP_CONTROLLER_CHARGE_TASK,
 	CAP_CONTROLLER_MONITOR_TASK,
-	CALIB_TASK,
 	DEBUG_CMD_TASK,
     STATUS_LED,
 } Task_List_t;
