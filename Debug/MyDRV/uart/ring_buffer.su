@@ -1,0 +1,10 @@
+../MyDRV/uart/ring_buffer.c:14:6:RingBuffer_Create	40	static
+../MyDRV/uart/ring_buffer.c:29:7:RingBuffer_Put	48	static
+../MyDRV/uart/ring_buffer.c:53:7:RingBuffer_Get	48	static
+../MyDRV/uart/ring_buffer.c:79:12:RingBuffer_NumFreeSlots	40	static
+../MyDRV/uart/ring_buffer.c:99:6:RingBuffer_ProcessAll	48	static
+../MyDRV/uart/ring_buffer.c:116:12:RingBuffer_GetHead	24	static
+../MyDRV/uart/ring_buffer.c:121:12:RingBuffer_GetTail	24	static
+../MyDRV/uart/ring_buffer.c:126:16:RingBuffer_GetHeadData	40	static
+../MyDRV/uart/ring_buffer.c:138:16:RingBuffer_GetTailData	40	static
+../MyDRV/uart/ring_buffer.c:149:7:RingBuffer_IsDataAvailable	40	static

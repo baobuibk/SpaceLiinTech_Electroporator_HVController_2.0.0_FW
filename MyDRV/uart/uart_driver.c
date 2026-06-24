@@ -101,7 +101,7 @@ void UART_Driver_SendFSP(UART_Driver_t* p_uart,const char *str, uint8_t len)
 
 	for (udx = 0; udx < len; udx++)
 	{
-		UART_Driver_Write(p_uart, (uint8_t)(*str));
+		UART_Driver_Write(p_uart, (uint8_t)(*str++));
 	}
 
 }

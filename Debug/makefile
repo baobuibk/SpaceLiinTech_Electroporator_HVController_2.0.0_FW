@@ -19,6 +19,7 @@ RM := rm -rf
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
+-include App/fsp_line_task/subdir.mk
 -include App/database/subdir.mk
 -include App/cmd_line_task/subdir.mk
 -include App/cap_controller_task/subdir.mk

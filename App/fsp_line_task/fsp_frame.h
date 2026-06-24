@@ -8,7 +8,10 @@
 #ifndef FSP_LINE_TASK_FSP_FRAME_H_
 #define FSP_LINE_TASK_FSP_FRAME_H_
 
-#include "fsp_line_task.h"
+#include "fsp.h"
+
+#include "stdint.h"
+#include "stdbool.h"
 
 typedef enum _FSP_CMD_typedef_
 {
@@ -22,30 +25,12 @@ typedef enum _FSP_CMD_typedef_
 	FSP_CMD_GET_CAP_RELEASE,
 	FSP_CMD_GET_CAP_CONTROL,
 	FSP_CMD_GET_CAP_ALL,
-	FSP_CMD_GET_OVV_FLAG,
+	FSP_CMD_GET_CAP_IS_CHARGING,
 	FSP_CMD_GET_CAP_FINISH_CHARGE,
 	FSP_CMD_GET_CAP_FINISH_DISCHARGE,
+	FSP_CMD_GET_OVV_FLAG,
 
 	FSP_CMD_MEASURE_VOLT,
-
-	FSP_CMD_GET_SENSOR_GYRO,
-	FSP_CMD_GET_SENSOR_ACCEL,
-	FSP_CMD_GET_SENSOR_LSM6DSOX,
-
-	FSP_CMD_GET_SENSOR_TEMP,
-	FSP_CMD_GET_SENSOR_PRESSURE,
-	FSP_CMD_GET_SENSOR_ALTITUDE,
-	FSP_CMD_GET_SENSOR_BMP390,
-	FSP_CMD_GET_SENSOR_H3LIS331DL,
-	FSP_CMD_GET_SENSOR_H3LIS331DL_FS,
-	FSP_CMD_SET_SENSOR_H3LIS331DL_FS,
-
-	FSP_CMD_GET_SENSOR_ADS1115_BAT,
-	FSP_CMD_GET_SENSOR_ADS1115_CHAR,
-	FSP_CMD_GET_SENSOR_ADS1115_AC,
-
-	FSP_CMD_GET_TEMP_HV,
-	FSP_CMD_GET_TEMP_LV,
 
 	FSP_CMD_HANDSHAKE,
 
@@ -99,7 +84,6 @@ typedef struct _GET_CHARGE_FINISH{
 
 }GET_CHARGE_FINISH;
 
-
 typedef struct _GET_DISCHARGE_FINISH{
 
 	uint8_t 	HV_discharge_finish_flag;
@@ -107,6 +91,12 @@ typedef struct _GET_DISCHARGE_FINISH{
 
 }GET_DISCHARGE_FINISH;
 
+typedef struct _GET_CAP_IS_CHARGING{
+
+	uint8_t 	HV_is_charging_flag;
+	uint8_t 	LV_is_charging_flag;
+
+}GET_CAP_IS_CHARGING;
 
 typedef struct _GET_OVV_FLAG_ {
 
@@ -120,7 +110,7 @@ typedef struct _CAP_GET_ALL{
 	uint8_t		HV_Volt_High;
 	uint8_t		HV_Volt_Low;
 	uint8_t		LV_Volt_High;
-	uint8_t 	Lv_Volt_Low;
+	uint8_t 	LV_Volt_Low;
 
 	uint8_t		HV_Volt_Charge;
 	uint8_t		LV_Volt_Charge;
@@ -144,6 +134,15 @@ typedef struct _GET_CAP_RELEASE
 
 }GET_CAP_RELEASE;
 
+typedef struct _GET_CAP_VOLT
+{
+	uint8_t		HV_Volt_High;
+	uint8_t		HV_Volt_Low;
+	uint8_t		LV_Volt_High;
+	uint8_t 	LV_Volt_Low;
+
+}GET_CAP_VOLT;
+
 typedef struct _MEASURE_VOLT_
 {
 	uint8_t 	HV_raw_volt_high;
@@ -154,69 +153,6 @@ typedef struct _MEASURE_VOLT_
 }MEASURE_VOLT;
 
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  Sensor Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-typedef struct _GET_SENSOR_GYRO_
-{
-	uint8_t 	gyro_x[2];
-	uint8_t 	gyro_y[2];
-	uint8_t 	gyro_z[2];
-} GET_SENSOR_GYRO;
-
-typedef struct _GET_SENSOR_ACCEL_
-{
-	uint8_t 	accel_x[2];
-	uint8_t 	accel_y[2];
-	uint8_t 	accel_z[2];
-
-} GET_SENSOR_ACCEL;
-
-typedef struct _GET_SENSOR_LSM6DSOX_
-{
-	uint8_t 	gyro_x[2];
-	uint8_t 	gyro_y[2];
-	uint8_t 	gyro_z[2];
-	uint8_t 	accel_x[2];
-	uint8_t 	accel_y[2];
-	uint8_t 	accel_z[2];
-
-} GET_SENSOR_LSM6DSOX;
-
-typedef struct _GET_SENSOR_TEMP_
-{
-	uint8_t 	temp[6];
-
-} GET_SENSOR_TEMP;
-
-typedef struct _GET_SENSOR_PRESSURE_
-{
-	uint8_t 	pressure[7];
-
-} GET_SENSOR_PRESSURE;
-
-typedef struct _GET_SENSOR_ALTITUDE_
-{
-	uint8_t 	altitude[4];
-
-} GET_SENSOR_ALTITUDE;
-
-typedef struct _GET_SENSOR_BMP390_
-{
-	uint8_t 	temp[6];
-	uint8_t 	pressure[7];
-	uint8_t 	altitude[4];
-
-} GET_SENSOR_BMP390;
-
-typedef struct _GET_SENSOR_H3LIS331DL_
-{
-	uint8_t 	accel_x[3];
-	uint8_t 	accel_y[3];
-	uint8_t 	accel_z[3];
-
-} GET_SENSOR_H3LIS331DL;
-
-
-
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 typedef struct _FSP_HANDSAKE_
 {
@@ -224,37 +160,34 @@ typedef struct _FSP_HANDSAKE_
 
 } FSP_HANDSAKE;
 
+typedef union _FSP_RESPONSE_
+{
+	bool	response;
+
+} FSP_RESPONSE;
+
+
 typedef union _FSP_Payload_Frame_typedef_
 {
-	SET_VOLT_ALL 		set_volt_all;
-	SET_VOLT_HV			set_volt_hv;
-	SET_VOLT_LV			set_volt_lv;
+	SET_VOLT_ALL 			set_volt_all;
+	SET_VOLT_HV				set_volt_hv;
+	SET_VOLT_LV				set_volt_lv;
+	SET_CHARGE				set_charge;
+	SET_DISCHARGE			set_discharge;
 
-	SET_CHARGE			set_charge;
-	SET_DISCHARGE		set_discharge;
+	GET_CHARGE_FINISH		finish_charge_flag;
+	GET_DISCHARGE_FINISH 	finish_discharge_flag;
+	GET_CAP_IS_CHARGING		cap_is_charging_flag;
+	GET_OVV_FLAG			get_ovv_flag;
+	GET_CAP_ALL				get_cap_all;
+	GET_CAP_VOLT			get_cap_volt;
+	GET_CAP_CONTROL			get_cap_control;
+	GET_CAP_RELEASE			get_cap_release;
 
-	GET_CHARGE_FINISH	finish_charge_flag;
-	GET_DISCHARGE_FINISH finish_discharge_flag;
+	MEASURE_VOLT 			measure_volt;
 
-	GET_OVV_FLAG		get_ovv_flag;
-
-	GET_CAP_ALL			get_cap_all;
-	GET_CAP_CONTROL		get_cap_control;
-	GET_CAP_RELEASE		get_cap_release;
-
-	MEASURE_VOLT 		measure_volt;
-
-	/* :::::::::: I2C Sensor Command :::::::: */
-	GET_SENSOR_GYRO							get_sensor_gyro;
-	GET_SENSOR_ACCEL						get_sensor_accel;
-	GET_SENSOR_LSM6DSOX						get_sensor_LSM6DSOX;
-
-	GET_SENSOR_TEMP							get_sensor_temp;
-	GET_SENSOR_PRESSURE						get_sensor_pressure;
-	GET_SENSOR_ALTITUDE						get_sensor_altitude;
-	GET_SENSOR_BMP390						get_sensor_BMP390;
-
-	GET_SENSOR_H3LIS331DL					get_sensor_H3LIS331DL;
+	FSP_HANDSAKE			handshake;
+	FSP_RESPONSE			fsp_response;
 
 } FSP_Payload_Frame_typedef;
 

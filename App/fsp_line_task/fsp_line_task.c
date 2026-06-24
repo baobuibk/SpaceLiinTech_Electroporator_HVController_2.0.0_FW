@@ -5,8 +5,8 @@
  *      Author: PV
  */
 
-#include "fsp_line_task.h"
 #include "fsp.h"
+#include "fsp_line_task.h"
 
 #include <string.h>
 
@@ -21,16 +21,6 @@ typedef struct{
 
 } fsp_line_typedef;
 
-//static const char * ErrorCode[7] =
-//{
-//    "FSP_PKT_RECEIVED_OK\n",
-//    "FSP_PKT_NOT_READY\n",
-//    "FSP_PKT_INVALID\n",
-//    "FSP_PKT_WRONG_ADR\n",
-//    "FSP_PKT_ERROR\n",
-//    "FSP_PKT_CRC_FAIL\n",
-//    "FSP_PKT_WRONG_LENGTH\n"
-//};
 
 UART_Driver_t  		GPP_UART;
 RingBufElement      g_GPP_UART_TX_buffer[GPP_TX_SIZE];
