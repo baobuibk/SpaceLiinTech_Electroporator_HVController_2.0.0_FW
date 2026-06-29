@@ -114,8 +114,8 @@ uint16_t Cap_Measure_Volt(Cap_Profile_t prf_cap_x);
 
 /* :::::::::: Cap Controller Driver Interupt Handler ::::::::::::: */
 void Cap_Controller_ADC_IRQHandler(void);
-void Cap_Controller_OVV_300V_flag(void);
-void Cap_Controller_OVV_50V_flag(void);
+void HV_OVV_Flag_Handle(void);
+void LV_OVV_Flag_Handle(void);
 
 
 #endif /* CAP_CONTROLLER_TASK_CAP_CONTROLLER_TASK_H_ */

@@ -84,42 +84,11 @@ Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
     },
     {
         .Volt_Value = 50,
-        .Duty_Max = 10,
+        .Duty_Max = 20,
     }
 };
 
-//#define CAP_50V_CHARNGE_RANGE_MAX 7
-//Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
-//{
-//    {
-//        .Volt_Value = 10,
-//        .Duty_Max = 10,
-//    },
-//    {
-//        .Volt_Value = 15,
-//        .Duty_Max = 10,
-//    },
-//    {
-//        .Volt_Value = 20,
-//        .Duty_Max = 10,
-//    },
-//    {
-//        .Volt_Value = 25,
-//        .Duty_Max = 10,
-//    },
-//    {
-//        .Volt_Value = 30,
-//        .Duty_Max = 10,
-//    },
-//    {
-//        .Volt_Value = 40,
-//        .Duty_Max = 10,
-//    },
-//    {
-//        .Volt_Value = 50,
-//        .Duty_Max = 10,
-//    }
-//};
+
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
 static Cap_Control_t s_Cap_300V = {
@@ -191,7 +160,7 @@ static uint16_t Cap_Calib_Calculate(Cap_Control_t* p_cap_x, uint16_t raw_voltage
 static uint16_t Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value);
 static void Cap_Set_Volt_Internal(Cap_Control_t* p_cap_x, uint16_t set_voltage);
 
-//static void fsp_print(uint8_t packet_length);
+static void fsp_print(uint8_t packet_length);
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Public Function ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -295,12 +264,6 @@ void Cap_Controller_Charge_Task(void*)
 					sprintf(msg,"HV CAP FINISHED CHARGING TO %dV\n\r", hv_set_volt);
 					UART_Driver_SendString(CMD_line_handle,msg);
 
-//					ps_FSP_TX -> CMD = FSP_CMD_GET_CAP_FINISH_CHARGE;
-//					ps_FSP_TX -> Payload.finish_charge_flag.HV_charge_finish_flag = true;
-//					ps_FSP_TX -> Payload.finish_charge_flag.LV_charge_finish_flag = false;
-//
-//					fsp_print(3);
-
 					s_Cap_300V.is_notified_on = false;
 				}
 			}
@@ -321,8 +284,7 @@ void Cap_Controller_Charge_Task(void*)
 	}
 
 	if(hv_OVV_flag == true){
-		s_Cap_300V.charge_PWM_duty = 0;
-		Flyback_Set_Duty(&s_Cap_300V, 0);
+
 	}
 	else if(hv_OVV_flag == false){
 
@@ -349,12 +311,6 @@ void Cap_Controller_Charge_Task(void*)
 					sprintf(msg,"LV CAP FINISHED CHARGING TO %dV\n\r", lv_set_volt);
 					UART_Driver_SendString(CMD_line_handle,msg);
 
-//					ps_FSP_TX -> CMD = FSP_CMD_GET_CAP_FINISH_CHARGE;
-//					ps_FSP_TX -> Payload.finish_charge_flag.HV_charge_finish_flag = false;
-//					ps_FSP_TX -> Payload.finish_charge_flag.LV_charge_finish_flag = true;
-//
-//					fsp_print(3);
-
 					s_Cap_50V.is_notified_on = false;
 				}
 
@@ -376,8 +332,7 @@ void Cap_Controller_Charge_Task(void*)
 	}
 
 	if(lv_OVV_flag == true){
-		s_Cap_50V.charge_PWM_duty = 0;
-		Flyback_Set_Duty(&s_Cap_50V, 0);
+
 	}
 	else if(lv_OVV_flag == false){
 
@@ -684,6 +639,37 @@ void Cap_Controller_ADC_IRQHandler(void)
 }
 
 
+void HV_OVV_Flag_Handle(void){
+    bool hv_OVV = true;
+    db_cap_write(DB_ID_CAP_HV_OVV_FLAG, &hv_OVV);
+
+	s_Cap_300V.charge_PWM_duty = 0;
+	Flyback_Set_Duty(&s_Cap_300V, 0);
+
+	Cap_Set_Discharge(CAP_PRF_HV, true);
+
+	ps_FSP_TX -> CMD = FSP_CMD_GET_OVV_FLAG;
+	ps_FSP_TX -> Payload.get_ovv_flag.HV_OVV_flag = hv_OVV;
+	ps_FSP_TX -> Payload.get_ovv_flag.LV_OVV_flag = false;
+
+	fsp_print(3);
+}
+
+void LV_OVV_Flag_Handle(void){
+    bool lv_OVV = true;
+    db_cap_write(DB_ID_CAP_LV_OVV_FLAG, &lv_OVV);
+
+	s_Cap_50V.charge_PWM_duty = 0;
+	Flyback_Set_Duty(&s_Cap_50V, 0);
+
+	Cap_Set_Discharge(CAP_PRF_LV, true);
+
+	ps_FSP_TX -> CMD = FSP_CMD_GET_OVV_FLAG;
+	ps_FSP_TX -> Payload.get_ovv_flag.HV_OVV_flag =	false ;
+	ps_FSP_TX -> Payload.get_ovv_flag.LV_OVV_flag = lv_OVV;
+
+	fsp_print(3);
+}
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Private Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -965,12 +951,6 @@ static void Cap_Controller_Discharge_Monitor_300V(void)
         hv_state = CAP_IS_FINISH_DISCHARGING;
         db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
 
-//		ps_FSP_TX -> CMD = FSP_CMD_GET_CAP_FINISH_DISCHARGE;
-//		ps_FSP_TX -> Payload.finish_discharge_flag.HV_discharge_finish_flag = true;
-//		ps_FSP_TX -> Payload.finish_discharge_flag.LV_discharge_finish_flag = false;
-//
-//		fsp_print(3);
-
 	}
 
 }
@@ -1015,7 +995,6 @@ static void Cap_Controller_Charge_Monitor_50V(void)
 
 	case CAP_CONTROL_CHARGE_STATE:
 
-
 		db_cap_read(DB_ID_CAP_LV_STATE, &lv_state);
 		if(lv_state != CAP_IS_FINISH_CHARGING) break;
 
@@ -1040,7 +1019,6 @@ static void Cap_Controller_Charge_Monitor_50V(void)
 		}
 
 		s_Cap_50V.range_index++;
-
 		break;
 
 	case CAP_SET_FREE_CHARGE_STATE:
@@ -1081,11 +1059,6 @@ static void Cap_Controller_Discharge_Monitor_50V(void)
         lv_state = CAP_IS_FINISH_DISCHARGING;
         db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
 
-//		ps_FSP_TX -> CMD = FSP_CMd_GET_CAP_FINISH_DISCHARGE;
-//		ps_FSP_TX -> Payload.finish_discharge_flag.HV_discharge_finish_flag = false;
-//		ps_FSP_TX -> Payload.finish_discharge_flag.LV_discharge_finish_flag = true;
-//
-//		fsp_print(3);
 	}
 }
 
@@ -1105,23 +1078,22 @@ static void Cap_Set_Volt_Internal(Cap_Control_t* p_cap_x, uint16_t set_voltage)
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ FSP ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-//static void fsp_print(uint8_t packet_length)
-//{
-//	s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
-//	s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
-//	s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
-//	s_FSP_TX_Packet.length 		= packet_length;
-//	s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
-//	s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
-//	s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
-//
-//	uint8_t encoded_frame[25] = { 0 };
-//	uint8_t frame_len;
-//	fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
-//
-//	UART_Driver_SendFSP(&GPP_UART, (char*)encoded_frame , frame_len);
-//}
+static void fsp_print(uint8_t packet_length)
+{
+	s_FSP_TX_Packet.sod 		= FSP_PKT_SOD;
+	s_FSP_TX_Packet.src_adr 	= fsp_my_adr;
+	s_FSP_TX_Packet.dst_adr 	= FSP_ADR_GPP;
+	s_FSP_TX_Packet.length 		= packet_length;
+	s_FSP_TX_Packet.type 		= FSP_PKT_TYPE_CMD_W_DATA;
+	s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
+	s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
 
+	uint8_t encoded_frame[25] = { 0 };
+	uint8_t frame_len;
+	fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
+
+	UART_Driver_SendFSP(&GPP_UART, (char*)encoded_frame , frame_len);
+}
 
 
 
