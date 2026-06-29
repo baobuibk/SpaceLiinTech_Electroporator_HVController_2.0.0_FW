@@ -215,10 +215,7 @@ void EXTI1_IRQHandler(void)
   {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_1);
     /* USER CODE BEGIN LL_EXTI_LINE_1 */
-
-	bool lv_OVV = true;
-	db_cap_write(DB_ID_CAP_LV_OVV_FLAG, &lv_OVV);
-
+	LV_OVV_Flag_Handle();
     /* USER CODE END LL_EXTI_LINE_1 */
   }
   /* USER CODE BEGIN EXTI1_IRQn 1 */
@@ -238,8 +235,7 @@ void EXTI3_IRQHandler(void)
   {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_3);
     /* USER CODE BEGIN LL_EXTI_LINE_3 */
-    bool hv_OVV = true;
-    db_cap_write(DB_ID_CAP_HV_OVV_FLAG, &hv_OVV);
+    HV_OVV_Flag_Handle();
     /* USER CODE END LL_EXTI_LINE_3 */
   }
   /* USER CODE BEGIN EXTI3_IRQn 1 */

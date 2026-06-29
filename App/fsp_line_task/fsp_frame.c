@@ -1,4 +1,4 @@
-/*
+	/*
  * fsp_frame.c
  *
  *  Created on: May 8, 2026
@@ -14,6 +14,7 @@
 
 #include "fsp_frame.h"
 #include "db_cap_controller.h"
+#include "uart_driver.h"
 
 
 
@@ -51,6 +52,8 @@ uint8_t FSP_Line_Process(void)
 		ps_FSP_TX -> Payload.fsp_response.response = true;
 		fsp_print(2);
 
+		UART_Driver_SendString(&DEBUG_UART,"\r\nHV and LV CAP SET VOLT RECEIVED");
+
 		return 1;
 	}
 
@@ -76,6 +79,8 @@ uint8_t FSP_Line_Process(void)
 		ps_FSP_TX -> Payload.fsp_response.response = true;
 		fsp_print(2);
 		
+		UART_Driver_SendString(&DEBUG_UART,"\r\nHV CAP SET VOLT RECEIVED");
+
 		return 1;
 	}
 
@@ -100,6 +105,8 @@ uint8_t FSP_Line_Process(void)
 		ps_FSP_TX -> CMD = FSP_CMD_SET_CAP_VOLT_LV;
 		ps_FSP_TX -> Payload.fsp_response.response = true;
 		fsp_print(2);
+
+		UART_Driver_SendString(&DEBUG_UART,"\r\nLV CAP SET VOLT RECEIVED");
 
 		return 1;
 	}
@@ -131,8 +138,10 @@ uint8_t FSP_Line_Process(void)
 		Cap_Set_Charge_All(hv_cmd_charge, lv_cmd_charge, true, true);
 
 		ps_FSP_TX -> CMD = FSP_CMD_SET_CAP_CONTROL;
-		ps_FSP_TX -> Payload.fsp_response.response =true;
+		ps_FSP_TX -> Payload.fsp_response.response = true;
 		fsp_print(2);
+
+		UART_Driver_SendString(&DEBUG_UART,"\r\nCAP SET CHARGE RECEIVED");
 
 		return 1;
 	}
@@ -150,7 +159,16 @@ uint8_t FSP_Line_Process(void)
 
 		return 1;
 	}
+	case FSP_CMD_RESET_CAP_OVV:
+	{
+		bool hv_ovv_flag = ps_FSP_RX -> Payload.reset_ovv_flag.HV_OVV_flag;
+		bool lv_ovv_flag = ps_FSP_RX -> Payload.reset_ovv_flag.LV_OVV_flag;
 
+		db_cap_write(DB_ID_CAP_HV_OVV_FLAG, &hv_ovv_flag);
+		db_cap_write(DB_ID_CAP_LV_OVV_FLAG, &lv_ovv_flag);
+
+		return 1;
+	}
 	case FSP_CMD_GET_OVV_FLAG:
 	{
 		bool hv_ovv_flag;
