@@ -1,42 +1,58 @@
-#ifndef _LSM6DSOX_H_
+/*
+ * LSM6DSOX.h
+ *
+ *  Created on: Apr 18, 2025
+ *      Author: HTSANG
+ */
 
-#define _LSM6DSOX_H_
+#ifndef SENSOR_I2C_LSM6DSOX_LSM6DSOX_H_
+#define SENSOR_I2C_LSM6DSOX_LSM6DSOX_H_
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Include ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 #include "stdint.h"
+#include "i2c.h"
 
-#include "sensor_interface.h"
+#define LSM6DSOX_ID		            0x6C
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-typedef struct _LSM6DSOX_data_typedef_
-{
-	int16_t x;
-	int16_t y;
-	int16_t z;
-} LSM6DSOX_data_typedef;
+#define LSM6DSOX_ID_ADDR			0x0F
+#define LSM6DSOX_ADDRESS            0x6A
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern LSM6DSOX_data_typedef Sensor_Gyro;
-extern LSM6DSOX_data_typedef Sensor_Accel;
+#define LSM6DSOX_CTRL1_XL           0X10
+#define LSM6DSOX_CTRL2_G            0X11
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Struct ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* :::::::::: LSM6DSOX Command :::::::: */
-uint8_t LSM6DSOX_init(i2c_stdio_typedef* p_i2c);
+#define LSM6DSOX_STATUS_REG         0X1E
 
-uint8_t LSM6DSOX_read_value(i2c_stdio_typedef* p_i2c, Sensor_Read_typedef read_type);
+#define LSM6DSOX_CTRL3_C            0X12
+#define LSM6DSOX_CTRL6_C            0X15
+#define LSM6DSOX_CTRL7_G            0X16
+#define LSM6DSOX_CTRL8_XL           0X17
 
-// bool LSM6DSOX_Calib();
+#define LSM6DSOX_OUTX_L_G           0X22
 
-/* :::::::::: LSM6DSOX Flag Check Command :::::::: */
-bool Is_LSM6DSOX_Init_Complete();
+#define GYRO_SENSITIVITY_500DPS 	0.01750f 		// dps/LSB
+#define ACCEL_SENSITIVITY_8G		0.000244f		// g / LSB
 
-bool Is_LSM6DSOX_Read_Complete();
+#define GYRO_SENSITIVITY_250DPS 	0.00875f 		// dps/LSB
+#define ACCEL_SENSITIVITY_2G		0.061f			// mg/LSB
 
-/* :::::::::: Sensor_LSM6DSOX Interface :::::::: */
-extern Sensor_Interface Sensor_LSM6DSOX;
+typedef struct LSM6DSOX_RawData {
+	uint8_t RxData[12];
+	I2C_Status_t status;
+} LSM6DSOX_RawData_t;
 
-#endif //_LSM6DSOX_H_
+typedef struct Accel_Gyro {
+	float x;
+	float y;
+	float z;
+} Accel_Gyro_t;
+
+typedef struct LSM6DSOX_Data {
+	Accel_Gyro_t Accel;
+	Accel_Gyro_t Gyro;
+} LSM6DSOX_Data_t;
+
+
+I2C_Status_t LSM6DSOX_Init(void);
+I2C_Status_t LSM6DSOX_Read_ID(uint8_t *ID);
+I2C_Status_t LSM6DSOX_Read_Data(LSM6DSOX_Data_t* LSM6DSOX_Data);
+
+#endif /* SENSOR_I2C_LSM6DSOX_LSM6DSOX_H_ */
