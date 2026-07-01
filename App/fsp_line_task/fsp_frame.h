@@ -32,6 +32,19 @@ typedef enum _FSP_CMD_typedef_
 
 	FSP_CMD_MEASURE_VOLT,
 
+	FSP_CMD_GET_SENSOR_GYRO,
+	FSP_CMD_GET_SENSOR_ACCEL,
+	FSP_CMD_GET_SENSOR_LSM6DSOX,
+
+	FSP_CMD_GET_SENSOR_TEMP,
+	FSP_CMD_GET_SENSOR_PRESSURE,
+	FSP_CMD_GET_SENSOR_ALTITUDE,
+	FSP_CMD_GET_SENSOR_BMP390,
+
+	FSP_CMD_GET_SENSOR_H3LIS331DL,
+	FSP_CMD_SET_SENSOR_H3LIS331DL_FS,
+	FSP_CMD_GET_SENSOR_H3LIS331DL_FS,
+
 	FSP_CMD_HANDSHAKE,
 
 } FSP_CMD_typedef;
@@ -152,6 +165,37 @@ typedef struct _MEASURE_VOLT_
 
 }MEASURE_VOLT;
 
+typedef struct _GET_SENSOR_LSM6DSOX_
+{
+	uint8_t Gyro_x[4]; 
+    uint8_t Gyro_y[4];
+    uint8_t Gyro_z[4];
+	uint8_t Accel_x[4];
+	uint8_t Accel_y[4];
+	uint8_t Accel_z[4];
+
+}GET_SENSOR_LMS6DSOX;
+
+typedef struct _GET_SENSOR_BMP390_
+{
+	uint8_t		Temp[4];
+	uint8_t 	Pressure[4];
+	uint8_t 	Altitude[4];
+
+}GET_SENSOR_BMP390;
+
+typedef struct _GET_SENSOR_H3LIS331DL_
+{
+	uint8_t Accel_x[4];
+	uint8_t Accel_y[4];
+	uint8_t Accel_z[4];
+
+}GET_SENSOR_H3LIS331DL;
+
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  GET SENSOR VALUE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -166,6 +210,7 @@ typedef union _FSP_RESPONSE_
 	bool	response;
 
 } FSP_RESPONSE;
+
 
 
 typedef union _FSP_Payload_Frame_typedef_
@@ -185,6 +230,10 @@ typedef union _FSP_Payload_Frame_typedef_
 	GET_CAP_RELEASE			get_cap_release;
 
 	MEASURE_VOLT 			measure_volt;
+
+	GET_SENSOR_LMS6DSOX		get_sensor_lsm6dsox;
+	GET_SENSOR_BMP390		get_sensor_bmp390;
+	GET_SENSOR_H3LIS331DL	get_sensor_h3lis331dl;
 
 	FSP_HANDSAKE			handshake;
 	FSP_RESPONSE			fsp_response;

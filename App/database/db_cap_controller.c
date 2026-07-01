@@ -42,10 +42,10 @@ void db_cap_init(void) {
     memset(&cap_db, 0, sizeof(db_cap_data_t));
 
     cap_db.hv_state = CAP_IS_IDLE;
-    cap_db.hv_volt_set = 0;
+    cap_db.hv_volt_set = 2;
 
     cap_db.lv_state = CAP_IS_IDLE;
-    cap_db.lv_volt_set = 0;
+    cap_db.lv_volt_set = 2;
 
 }
 

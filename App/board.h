@@ -66,26 +66,37 @@
 #define FSP_BUF_LEN				128
 
 /*********************SPI***********************/
-//#define FRAM_SPI_HANDLE         SPI3
-//
-//#define FRAM_SPI_CS_PORT        GPIOA
-//#define FRAM_SPI_CS_PIN         LL_GPIO_PIN_12
-//
-//#define FRAM_DMA_HANDLE			DMA1
-//#define FRAM_DMA_CHANNEL		LL_DMA_CHANNEL_0
-//#define FRAM_DMA_TX_STREAM		LL_DMA_STREAM_5
-//#define FRAM_DMA_RX_STREAM		LL_DMA_STREAM_5
+// #define FRAM_SPI_HANDLE         SPI3
+
+// #define FRAM_SPI_CS_PORT        GPIOA
+// #define FRAM_SPI_CS_PIN         LL_GPIO_PIN_12
+
+// #define FRAM_DMA_HANDLE			DMA1
+// #define FRAM_DMA_CHANNEL		LL_DMA_CHANNEL_0
+// #define FRAM_DMA_TX_STREAM		LL_DMA_STREAM_5
+// #define FRAM_DMA_RX_STREAM		LL_DMA_STREAM_5
 
 /**********************I2C**********************/
-//
-//#define ONBOARD_SENSOR_I2C_HANDLE   I2C1
-//#define ONBOARD_SENSOR_I2C_IRQ      I2C1_EV_IRQn
-//
-//#define CHARGER_I2C_HANDLE   		I2C2
-//#define CHARGER_SENSOR_I2C_IRQ      I2C2_EV_IRQn
-//
-//#define SENSOR_I2C_HANDLE           I2C3
-//#define SENSOR_I2C_IRQ              I2C3_EV_IRQn
+
+#define ONBOARD_SENSOR_I2C_HANDLE   I2C1
+#define ONBOARD_SENSOR_I2C_IRQ      I2C1_EV_IRQn
+
+#define CHARGER_I2C_HANDLE   		I2C2
+#define CHARGER_SENSOR_I2C_IRQ      I2C2_EV_IRQn
+
+#define SENSOR_I2C_HANDLE           I2C3
+#define SENSOR_I2C_IRQ              I2C3_EV_IRQn
+
+#define SENSOR_INT_PORT             GPIOB
+
+#define SENSOR_H3LIS331DL_INT1_PIN            LL_GPIO_PIN_2
+#define SENSOR_H3LIS331DL_INT2_PIN            LL_GPIO_PIN_0
+#define SENSOR_LSM6DSOX_INT1_PIN              LL_GPIO_PIN_1
+#define SENSOR_LSM6DSOX_INT2_PIN              LL_GPIO_PIN_3
+
+
+
+
 
 
 

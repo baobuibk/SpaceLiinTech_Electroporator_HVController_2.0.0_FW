@@ -12,6 +12,7 @@
 
 #include "app.h"
 
+#include "crc.h"
 #include "fsp_frame.h"
 #include "db_cap_controller.h"
 #include "uart_driver.h"
@@ -282,10 +283,228 @@ uint8_t FSP_Line_Process(void)
 		return 1;
 
 	}
+	case FSP_CMD_GET_SENSOR_GYRO:
+	{
+		LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+
+		int32_t gyro_x = (int32_t)(LSM6DSOX_Data.Gyro.x * 1000);
+		int32_t gyro_y = (int32_t)(LSM6DSOX_Data.Gyro.y * 1000);
+		int32_t gyro_z = (int32_t)(LSM6DSOX_Data.Gyro.z * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_GYRO;
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[0] = (uint8_t)(gyro_x & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[1] = (uint8_t)((gyro_x >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[2] = (uint8_t)((gyro_x >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[3] = (uint8_t)((gyro_x >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_y[0] = (uint8_t)(gyro_y & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_y[1] = (uint8_t)((gyro_y >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_y[2] = (uint8_t)((gyro_y >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_y[3] = (uint8_t)((gyro_y >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_z[0] = (uint8_t)(gyro_z & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_z[1] = (uint8_t)((gyro_z >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_z[2] = (uint8_t)((gyro_z >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_z[3] = (uint8_t)((gyro_z >> 24) & 0xFF);
+
+		fsp_print(13);
+	
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_ACCEL:
+	{
+		LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+
+		int32_t accel_x = (int32_t)(LSM6DSOX_Data.Accel.x * 1000);
+		int32_t accel_y = (int32_t)(LSM6DSOX_Data.Accel.y * 1000);
+		int32_t accel_z = (int32_t)(LSM6DSOX_Data.Accel.z * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_ACCEL;
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[0] = (uint8_t)(accel_x & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[1] = (uint8_t)((accel_x >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[2] = (uint8_t)((accel_x >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[3] = (uint8_t)((accel_x >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_y[0] = (uint8_t)(accel_y & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_y[1] = (uint8_t)((accel_y >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_y[2] = (uint8_t)((accel_y >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_y[3] = (uint8_t)((accel_y >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_z[0] = (uint8_t)(accel_z & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_z[1] = (uint8_t)((accel_z >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_z[2] = (uint8_t)((accel_z >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_z[3] = (uint8_t)((accel_z >> 24) & 0xFF);
+
+		fsp_print(25);
+
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_LSM6DSOX:
+	{
+		LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+
+		int32_t gyro_x = (int32_t)(LSM6DSOX_Data.Gyro.x * 1000);
+		int32_t gyro_y = (int32_t)(LSM6DSOX_Data.Gyro.y * 1000);
+		int32_t gyro_z = (int32_t)(LSM6DSOX_Data.Gyro.z * 1000);
+
+		int32_t accel_x = (int32_t)(LSM6DSOX_Data.Accel.x * 1000);
+		int32_t accel_y = (int32_t)(LSM6DSOX_Data.Accel.y * 1000);
+		int32_t accel_z = (int32_t)(LSM6DSOX_Data.Accel.z * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_LSM6DSOX;
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[0] = (uint8_t)(gyro_x & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[1] = (uint8_t)((gyro_x >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[2] = (uint8_t)((gyro_x >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[3] = (uint8_t)((gyro_x >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_y[0] = (uint8_t)(gyro_y & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_y[1] = (uint8_t)((gyro_y >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_y[2] = (uint8_t)((gyro_y >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_y[3] = (uint8_t)((gyro_y >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_z[0] = (uint8_t)(gyro_z & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_z[1] = (uint8_t)((gyro_z >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_z[2] = (uint8_t)((gyro_z >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_z[3] = (uint8_t)((gyro_z >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[0] = (uint8_t)(accel_x & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[1] = (uint8_t)((accel_x >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[2] = (uint8_t)((accel_x >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[3] = (uint8_t)((accel_x >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_y[0] = (uint8_t)(accel_y & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_y[1] = (uint8_t)((accel_y >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_y[2] = (uint8_t)((accel_y >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_y[3] = (uint8_t)((accel_y >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_z[0] = (uint8_t)(accel_z & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_z[1] = (uint8_t)((accel_z >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_z[2] = (uint8_t)((accel_z >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_z[3] = (uint8_t)((accel_z >> 24) & 0xFF);
+
+		fsp_print(25);
+
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_TEMP:
+	{
+		bmp390_temp_press_update(&BMP390_Val);
+
+		int32_t temp 	= (int32_t)(BMP390_Val.temperature * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_TEMP;
+
+		ps_FSP_TX->Payload.get_sensor_bmp390.Temp[0] = (uint8_t)(temp & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Temp[1] = (uint8_t)((temp >> 8) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Temp[2] = (uint8_t)((temp >> 16) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Temp[3] = (uint8_t)((temp >> 24) & 0xFF);
+
+		fsp_print(13);
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_PRESSURE:
+	{
+		bmp390_temp_press_update(&BMP390_Val);
+
+		int32_t pressure = (int32_t)(BMP390_Val.pressure  * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_PRESSURE;
+
+		ps_FSP_TX->Payload.get_sensor_bmp390.Pressure[0] = (uint8_t)(pressure & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Pressure[1] = (uint8_t)((pressure >> 8) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Pressure[2] = (uint8_t)((pressure >> 16) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Pressure[3] = (uint8_t)((pressure >> 24) & 0xFF);
+
+		fsp_print(13);
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_ALTITUDE:
+	{
+		bmp390_temp_press_update(&BMP390_Val);
+
+		int32_t altitude = (int32_t)(BMP390_Val.altitude  * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_ALTITUDE;
+
+		ps_FSP_TX->Payload.get_sensor_bmp390.Altitude[0] = (uint8_t)(altitude & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Altitude[1] = (uint8_t)((altitude >> 8) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Altitude[2] = (uint8_t)((altitude >> 16) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Altitude[3] = (uint8_t)((altitude >> 24) & 0xFF);
+
+		fsp_print(13);
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_BMP390:
+	{
+		bmp390_temp_press_update(&BMP390_Val);
+		int32_t temp 	= (int32_t)(BMP390_Val.temperature * 1000);
+		int32_t pressure = (int32_t)(BMP390_Val.pressure  * 1000);
+		int32_t altitude = (int32_t)(BMP390_Val.altitude  * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_BMP390;
+
+		ps_FSP_TX->Payload.get_sensor_bmp390.Temp[0] = (uint8_t)(temp & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Temp[1] = (uint8_t)((temp >> 8) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Temp[2] = (uint8_t)((temp >> 16) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Temp[3] = (uint8_t)((temp >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_bmp390.Pressure[0] = (uint8_t)(pressure & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Pressure[1] = (uint8_t)((pressure >> 8) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Pressure[2] = (uint8_t)((pressure >> 16) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Pressure[3] = (uint8_t)((pressure >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_bmp390.Altitude[0] = (uint8_t)(altitude & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Altitude[1] = (uint8_t)((altitude >> 8) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Altitude[2] = (uint8_t)((altitude >> 16) & 0xFF);
+		ps_FSP_TX->Payload.get_sensor_bmp390.Altitude[3] = (uint8_t)((altitude >> 24) & 0xFF);
+
+		fsp_print(13);
+
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_H3LIS331DL:
+	{
+		H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
+
+		int32_t accel_x = (int32_t)(H3LIS331DL_Data.x * 1000);
+		int32_t accel_y = (int32_t)(H3LIS331DL_Data.y * 1000);
+		int32_t accel_z = (int32_t)(H3LIS331DL_Data.z * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_H3LIS331DL;
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_x[0] = (uint8_t)(accel_x & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_x[1] = (uint8_t)((accel_x >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_x[2] = (uint8_t)((accel_x >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_x[3] = (uint8_t)((accel_x >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_y[0] = (uint8_t)(accel_y & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_y[1] = (uint8_t)((accel_y >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_y[2] = (uint8_t)((accel_y >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_y[3] = (uint8_t)((accel_y >> 24) & 0xFF);
+
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_z[0] = (uint8_t)(accel_z & 0xFF);       
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_z[1] = (uint8_t)((accel_z >> 8) & 0xFF);  
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_z[2] = (uint8_t)((accel_z >> 16) & 0xFF); 
+		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_z[3] = (uint8_t)((accel_z >> 24) & 0xFF);
+
+		fsp_print(13);
+
+		break;
+	}
+	case FSP_CMD_SET_SENSOR_H3LIS331DL_FS:
+	{
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_H3LIS331DL_FS:
+	{
+		break;
+	}
 	default:
 		return 0;
 
 	}
+
+	return 1;
 }
 
 
@@ -299,7 +518,7 @@ static void fsp_print(uint8_t packet_length)
 	s_FSP_TX_Packet.eof 		= FSP_PKT_EOF;
 	s_FSP_TX_Packet.crc16 		= crc16_CCITT(FSP_CRC16_INITIAL_VALUE, &s_FSP_TX_Packet.src_adr, s_FSP_TX_Packet.length + 4);
 
-	uint8_t encoded_frame[25] = { 0 };
+	uint8_t encoded_frame[35] = { 0 };
 	uint8_t frame_len;
 	fsp_encode(&s_FSP_TX_Packet, encoded_frame, &frame_len);
 

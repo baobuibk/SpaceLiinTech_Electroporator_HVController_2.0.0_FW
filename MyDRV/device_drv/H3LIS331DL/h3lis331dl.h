@@ -1,43 +1,52 @@
-#ifndef _H3LIS331DL_H_
+/*
+ * h3lis331dl.h
+ *
+ *  Created on: Apr 18, 2025
+ *      Author: HTSANG
+ */
 
-#define _H3LIS331DL_H_
+#ifndef SENSOR_I2C_H3LIS331DL_H3LIS331DL_H_
+#define SENSOR_I2C_H3LIS331DL_H3LIS331DL_H_
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Include ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#include "main.h"
+#include "i2c.h"
+#include "stdbool.h"
 #include "stdint.h"
+#include "board.h"
 
-#include "sensor_interface.h"
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-typedef struct _H3LIS331DL_data_typedef_
+#define H3LIS331DL_ID						0x32
+
+#define H3LIS331DL_ID_REG                   0x0F
+/** I2C Device Address 8 bit format  if SA0=0 -> 0x18 if SA0=1 -> 0x19 **/
+// #define H3LIS331DL_I2C_ADDR					0x18
+#define H3LIS331DL_I2C_ADDR					0x19
+#define H3LIS331DL_CTRL_REG1				0x20
+#define H3LIS331DL_CTRL_REG4				0x23
+#define H3LIS331DL_OUT_X_L					0x28
+#define H3LIS331DL_OUT_X_L_MULTI			0xA8
+
+#define H3LIS_SENSITIVITY_100G              49.0f
+#define H3LIS_SENSITIVITY_200G              98.0f
+#define H3LIS_SENSITIVITY_400G              195.0f
+
+
+typedef struct H3LIS331DL_RawData
 {
-	int32_t x;
-	int32_t y;
-	int32_t z;
-	uint8_t full_scale;
-} H3LIS331DL_data_typedef;
+	uint8_t accel_raw[6];
+	int16_t acceleration[3];
+	I2C_Status_t status;
+}H3LIS331DL_RawData_t;
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern H3LIS331DL_data_typedef H3LIS_Accel;
+typedef struct H3LIS331DL_Data
+{
+	float x;
+	float y;
+	float z;
+} H3LIS331DL_Data_t;
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Struct ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* :::::::::: H3LIS331DL Command :::::::: */
-uint8_t H3LIS331DL_init(i2c_stdio_typedef* p_i2c);
+I2C_Status_t H3LIS331DL_Init(void);
+I2C_Status_t H3LIS331DL_Read_ID(uint8_t *ID);
+I2C_Status_t H3LIS331DL_Get_Accel(H3LIS331DL_Data_t *Data);
 
-uint8_t H3LIS331DL_read_value(i2c_stdio_typedef* p_i2c, Sensor_Read_typedef read_type);
-
-uint8_t H3LIS331DL_set_full_scale(i2c_stdio_typedef* p_i2c, uint32_t full_scale);
-uint8_t H3LIS331DL_get_full_scale(i2c_stdio_typedef* p_i2c);
-
-/* :::::::::: H3LIS331DL Flag Check Command :::::::: */
-bool Is_H3LIS331DL_Init_Complete(void);
-
-bool Is_H3LIS331DL_Read_Complete(void);
-
-/* :::::::::: Sensor_LSM6DSOX Interface :::::::: */
-extern Sensor_Interface Sensor_H3LIS331DL;
-
-#endif //_H3LIS331DL_H_
+#endif /* SENSOR_I2C_H3LIS331DL_H3LIS331DL_H_ */

@@ -1,69 +1,35 @@
-#ifndef _SENSOR_TASK_H_
-#define _SENSOR_TASK_H_
+/*
+ * sensor_task.h
+ *
+ *  Created on: Jun 30, 2026
+ *      Author: PV
+ */
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Include ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+#ifndef SENSOR_TASK_SENSOR_TASK_H_
+#define SENSOR_TASK_SENSOR_TASK_H_
+
+#include "i2c.h"
 #include "lsm6dsox.h"
-#include "bmp390.h"
 #include "h3lis331dl.h"
+#include "bmp390.h"
+#include "board.h"
 
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Defines ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Types ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-typedef enum
-{
-	SENSOR_INIT_TYPE,
-	SENSOR_READ_TYPE,
-	SENSOR_SET_FS_TYPE,
-	SENSOR_GET_FS_TYPE,
-	SENSOR_RESET_I2C_BUS_TYPE,
-} sensor_request_type_t;
+typedef struct Sens_List_Status {
 
-typedef struct
-{
-	bool				  is_requested;
-	uint8_t 			  request;
-	sensor_request_type_t request_type;
-} request_buffer_t;
+	uint8_t lsm6d;
+    uint8_t h3lis;
+    uint8_t	bmp390;
 
-typedef struct _sensor_request_rb_t_
-{
-		i2c_stdio_typedef* 	p_i2c;
-        request_buffer_t*   p_request_buffer;
+} Sens_List_Status_t;
 
-				uint16_t    buffer_size;
-    volatile    uint16_t    write_index;
-    volatile    uint16_t    read_index;
-				
-	Sensor_Interface*    	pfn_sensor_function;
-				 bool		is_init;
-		 i2c_result_t		is_complete;
 
-		 		char*		p_sensor_name;
+extern LSM6DSOX_Data_t LSM6DSOX_Data;
+extern H3LIS331DL_Data_t H3LIS331DL_Data;
+extern BMP390_Value BMP390_Val;
 
-} sensor_request_rb_t;
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Variables ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern sensor_request_rb_t Sensor_BMP390_rb;
-extern sensor_request_rb_t Sensor_LSM6DSOX_rb;
-extern sensor_request_rb_t Onboard_Sensor_H3LIS331DL_rb;
+void Sensor_I2C_Init(void);
+void Sensor_I2C_task(void*);
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Enum ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Struct ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Class ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Prototype ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-extern bool is_accel_calib;
-
-void Sensor_Read_Init(void);
-void Sensor_Read_Task(void*);
-
-bool Sensor_Read_Value(Sensor_Read_typedef read_type);
-uint8_t Is_Sensor_Read_Complete(sensor_request_rb_t* p_sensor_rb);
-
-void Sensor_I2C_IRQHandler(void);
-void Onboard_Sensor_I2C_IRQHandler(void);
-
-void Sensor_I2C_ER_IRQHandler(void);
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ End of the program ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-
-#endif /* _SENSOR_TASK_H_ */
+#endif /* SENSOR_TASK_SENSOR_TASK_H_ */

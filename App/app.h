@@ -33,18 +33,23 @@
 
 // USER DIVICE //
 //#include "MB85RS2MT.h"
+#include "h3lis331dl.h"
+#include "lsm6dsox.h"
 
 // INCLUDE TASK //
 #include "debug_cmd_task.h"
 #include "cap_controller_task.h"
 #include "fsp_line_task.h"
+#include "sensor_task.h"
 
 
 typedef enum
 {
     CAP_CONTROLLER_CHARGE_TASK,
 	CAP_CONTROLLER_MONITOR_TASK,
+	FSP_LINE_TASK,
 	DEBUG_CMD_TASK,
+	SENSOR_TASK,
     STATUS_LED,
 } Task_List_t;
 
