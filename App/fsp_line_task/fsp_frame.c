@@ -499,6 +499,29 @@ uint8_t FSP_Line_Process(void)
 	{
 		break;
 	}
+	case FSP_CMD_GET_SENSOR_HV_TEMP:
+	{
+		uint16_t hv_temp_ret = Temp_HV_Channel.temp_value * 100;
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_HV_TEMP;
+		ps_FSP_TX -> Payload.get_sensor_hv_temp.HV_temp_high = (uint8_t)((hv_temp_ret >> 8) & 0xFF);
+		ps_FSP_TX -> Payload.get_sensor_hv_temp.HV_temp_low = (uint8_t)(hv_temp_ret & 0xFF);
+
+		fsp_print(3);
+
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_LV_TEMP:
+	{
+		uint16_t lv_temp_ret = Temp_LV_Channel.temp_value * 100;
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_LV_TEMP;
+		ps_FSP_TX -> Payload.get_sensor_lv_temp.LV_temp_high = (uint8_t)((lv_temp_ret >> 8) & 0xFF);
+		ps_FSP_TX -> Payload.get_sensor_lv_temp.LV_temp_low = (uint8_t)(lv_temp_ret & 0xFF);
+
+		fsp_print(3);
+		break;
+	}
 	default:
 		return 0;
 

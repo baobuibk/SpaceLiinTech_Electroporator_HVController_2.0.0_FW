@@ -477,6 +477,8 @@ void Cap_Set_Discharge(Cap_Profile_t prf_cap_x, bool discharge_state)
 
 				cap_state = CAP_IS_DISCHARGING;
 				db_cap_write(DB_ID_CAP_HV_STATE, &cap_state);
+
+				PID_SetOutputLimits(&s_Cap_300V.charge_PID, 0, 5);
 		}
 		else{
 				cap_state = CAP_IS_IDLE;
@@ -493,6 +495,8 @@ void Cap_Set_Discharge(Cap_Profile_t prf_cap_x, bool discharge_state)
 
 				cap_state = CAP_IS_DISCHARGING;
 				db_cap_write(DB_ID_CAP_LV_STATE, &cap_state);
+
+				PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, 5);
 		}
 		else{
 				cap_state = CAP_IS_IDLE;
@@ -515,6 +519,8 @@ void Cap_Set_Discharge_All(bool HV_discharge_state, bool LV_discharge_state)
 
 		hv_state = CAP_IS_DISCHARGING;
 		db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
+
+		PID_SetOutputLimits(&s_Cap_300V.charge_PID, 0, 5);
 	}
 	else
 	{
@@ -534,6 +540,8 @@ void Cap_Set_Discharge_All(bool HV_discharge_state, bool LV_discharge_state)
 
 		lv_state = CAP_IS_DISCHARGING;
 		db_cap_write(DB_ID_CAP_LV_STATE, &lv_state);
+
+		PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, 5);
 	}
 	else{
 		lv_state = CAP_IS_IDLE;
