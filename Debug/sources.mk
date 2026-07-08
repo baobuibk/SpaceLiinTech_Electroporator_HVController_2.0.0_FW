@@ -38,6 +38,7 @@ MyDRV/cli/CLI_Src \
 MyDRV/device_drv/BMP390 \
 MyDRV/device_drv/H3LIS331DL \
 MyDRV/device_drv/LSM6DSOX \
+MyDRV/device_drv/TC1047AVNBTR \
 MyDRV/fsp \
 MyDRV/i2c \
 MyDRV/pid \

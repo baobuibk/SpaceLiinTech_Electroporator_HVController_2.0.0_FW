@@ -18,12 +18,11 @@
 #define ADC_300V_CHANNEL        LL_ADC_CHANNEL_12
 #define ADC_50V_CHANNEL         LL_ADC_CHANNEL_10
 
-//#define ADC_TEMP_HANDLE			ADC2
-//#define ADC_TEMP_IRQ			ADC2_IRQn
-//
-//#define ADC_TEMP_CHANNEL_COUNT 	2
-//#define ADC_TEMP_300V_CHANNEL	LL_ADC_CHANNEL_14
-//#define ADC_TEMP_50V_CHANNEL  	LL_ADC_CHANNEL_15
+#define ADC_TEMP_HANDLE			ADC2
+
+#define ADC_TEMP_CHANNEL_COUNT 	2
+#define ADC_TEMP_300V_CHANNEL	LL_ADC_CHANNEL_14
+#define ADC_TEMP_50V_CHANNEL  	LL_ADC_CHANNEL_15
 /***********************************************/
 
 /*********************FLYBACK*******************/

@@ -45,6 +45,9 @@ typedef enum _FSP_CMD_typedef_
 	FSP_CMD_SET_SENSOR_H3LIS331DL_FS,
 	FSP_CMD_GET_SENSOR_H3LIS331DL_FS,
 
+	FSP_CMD_GET_SENSOR_HV_TEMP,
+	FSP_CMD_GET_SENSOR_LV_TEMP,
+
 	FSP_CMD_HANDSHAKE,
 
 } FSP_CMD_typedef;
@@ -192,6 +195,22 @@ typedef struct _GET_SENSOR_H3LIS331DL_
 
 }GET_SENSOR_H3LIS331DL;
 
+typedef struct _GET_SENSOR_HV_TEMP_
+{
+	uint8_t		HV_temp_high;
+	uint8_t		HV_temp_low;
+
+}GET_SENSOR_HV_TEMP;
+
+typedef struct _GET_SENSOR_LV_TEMP_
+{
+	uint8_t		LV_temp_high;
+	uint8_t		LV_temp_low;
+
+}GET_SENSOR_LV_TEMP;
+
+
+
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  GET SENSOR VALUE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -234,6 +253,9 @@ typedef union _FSP_Payload_Frame_typedef_
 	GET_SENSOR_LMS6DSOX		get_sensor_lsm6dsox;
 	GET_SENSOR_BMP390		get_sensor_bmp390;
 	GET_SENSOR_H3LIS331DL	get_sensor_h3lis331dl;
+
+	GET_SENSOR_HV_TEMP		get_sensor_hv_temp;
+	GET_SENSOR_LV_TEMP		get_sensor_lv_temp;
 
 	FSP_HANDSAKE			handshake;
 	FSP_RESPONSE			fsp_response;

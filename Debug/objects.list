@@ -27,6 +27,7 @@
 "./MyDRV/device_drv/BMP390/bmp390.o"
 "./MyDRV/device_drv/H3LIS331DL/h3lis331dl.o"
 "./MyDRV/device_drv/LSM6DSOX/lsm6dsox.o"
+"./MyDRV/device_drv/TC1047AVNBTR/TC1047.o"
 "./MyDRV/fsp/crc16.o"
 "./MyDRV/fsp/fsp.o"
 "./MyDRV/i2c/i2c.o"

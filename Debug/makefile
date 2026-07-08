@@ -15,6 +15,7 @@ RM := rm -rf
 -include MyDRV/pid/subdir.mk
 -include MyDRV/i2c/subdir.mk
 -include MyDRV/fsp/subdir.mk
+-include MyDRV/device_drv/TC1047AVNBTR/subdir.mk
 -include MyDRV/device_drv/LSM6DSOX/subdir.mk
 -include MyDRV/device_drv/H3LIS331DL/subdir.mk
 -include MyDRV/device_drv/BMP390/subdir.mk
