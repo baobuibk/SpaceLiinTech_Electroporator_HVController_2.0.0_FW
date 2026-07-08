@@ -10,6 +10,8 @@
 #include "stdbool.h"
 
 
+static uint8_t Sensor_I2C_Read_Turn = 0;
+
 TC1047_Handle_t Temp_HV_Channel;
 TC1047_Handle_t Temp_LV_Channel;
 
@@ -69,9 +71,25 @@ void  Sensor_I2C_Init(void) {
 
 /*-------------------------- TASK FUNTION --------------------------*/
 void Sensor_I2C_task(void*){
-	LSM6DSOX_Read_Data(&LSM6DSOX_Data);
-	H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
-	bmp390_temp_press_update(&BMP390_Val);
+
+	switch (Sensor_I2C_Read_Turn)
+	{
+	case 0:
+		H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
+		Sensor_I2C_Read_Turn = 1;
+		break;
+	case 1:
+		LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+		Sensor_I2C_Read_Turn = 2;
+		break;
+	case 2:
+		bmp390_temp_press_update(&BMP390_Val);
+		Sensor_I2C_Read_Turn = 0;
+		break;
+	default:
+		Sensor_I2C_Read_Turn = 0;
+		break;
+	}
 }
 
 void Sensor_ADC_task(void*){

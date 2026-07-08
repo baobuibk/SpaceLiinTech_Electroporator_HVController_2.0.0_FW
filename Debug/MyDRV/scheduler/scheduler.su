@@ -1,0 +1,9 @@
+../MyDRV/scheduler/scheduler.c:37:1:SchedulerSysTickIntHandler	4	static
+../MyDRV/scheduler/scheduler.c:65:6:SchedulerInit	16	static
+../MyDRV/scheduler/scheduler.c:84:10:scheduler_get_tick	4	static
+../MyDRV/scheduler/scheduler.c:106:1:SchedulerRun	16	static
+../MyDRV/scheduler/scheduler.c:161:1:SchedulerTaskEnable	16	static
+../MyDRV/scheduler/scheduler.c:213:1:SchedulerTaskDisable	16	static
+../MyDRV/scheduler/scheduler.c:239:1:SchedulerTickCountGet	4	static
+../MyDRV/scheduler/scheduler.c:264:1:SchedulerElapsedTicksGet	16	static
+../MyDRV/scheduler/scheduler.c:291:1:SchedulerElapsedTicksCalc	16	static

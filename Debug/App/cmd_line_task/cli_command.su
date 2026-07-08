@@ -1,0 +1,14 @@
+../Drivers/CMSIS/Include/core_cm4.h:1938:34:__NVIC_SystemReset	4	static,ignoring_inline_asm
+../App/cmd_line_task/cli_command.c:111:13:CMD_ClearCLI	40	static
+../App/cmd_line_task/cli_command.c:117:13:CMD_Reset	24	static
+../App/cmd_line_task/cli_command.c:122:13:CMD_SET_CAP_VOLT_ALL	40	static
+../App/cmd_line_task/cli_command.c:172:13:CMD_SET_CAP_VOLT_HV	32	static
+../App/cmd_line_task/cli_command.c:204:13:CMD_SET_CAP_VOLT_LV	32	static
+../App/cmd_line_task/cli_command.c:239:13:CMD_SET_CAP_CONTROL	48	static
+../App/cmd_line_task/cli_command.c:306:13:CMD_SET_CAP_RELEASE	40	static
+../App/cmd_line_task/cli_command.c:336:13:CMD_GET_CAP_VOLT	96	static
+../App/cmd_line_task/cli_command.c:353:13:CMD_GET_CAP_CONTROL	32	static
+../App/cmd_line_task/cli_command.c:379:13:CMD_GET_CAP_RELEASE	32	static
+../App/cmd_line_task/cli_command.c:406:13:CMD_GET_CAP_ALL	136	static
+../App/cmd_line_task/cli_command.c:473:26:getCliStaticBindings	4	static
+../App/cmd_line_task/cli_command.c:477:10:getCliStaticBindingCount	4	static

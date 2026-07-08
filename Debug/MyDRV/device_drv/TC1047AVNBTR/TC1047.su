@@ -1,0 +1,10 @@
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:2493:22:LL_ADC_REG_SetSequencerRanks	40	static,ignoring_inline_asm
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:3870:22:LL_ADC_Enable	16	static
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:3892:26:LL_ADC_IsEnabled	16	static
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:3921:22:LL_ADC_REG_StartConversionSWStart	16	static
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:3989:26:LL_ADC_REG_ReadConversionData12	16	static
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:4290:26:LL_ADC_IsActiveFlag_EOCS	16	static
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_adc.h:4343:22:LL_ADC_ClearFlag_EOCS	16	static
+../MyDRV/device_drv/TC1047AVNBTR/TC1047.c:11:6:TC1047_Init	24	static
+../MyDRV/device_drv/TC1047AVNBTR/TC1047.c:19:10:TC1047_ReadRaw	24	static
+../MyDRV/device_drv/TC1047AVNBTR/TC1047.c:43:7:TC1047_GetTemperature	32	static

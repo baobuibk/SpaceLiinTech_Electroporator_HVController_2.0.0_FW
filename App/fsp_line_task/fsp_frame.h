@@ -195,6 +195,19 @@ typedef struct _GET_SENSOR_H3LIS331DL_
 
 }GET_SENSOR_H3LIS331DL;
 
+typedef struct _GET_SENSOR_H3LIS331DL_FS_
+{
+	uint8_t		fs_value;
+
+}GET_SENSOR_H3LIS331DL_FS;
+
+typedef struct _SET_SENSOR_H3LIS331DL_FS_
+{
+	uint8_t		fs_value;
+	
+}SET_SENSOR_H3LIS331DL_FS;
+
+
 typedef struct _GET_SENSOR_HV_TEMP_
 {
 	uint8_t		HV_temp_high;
@@ -253,6 +266,8 @@ typedef union _FSP_Payload_Frame_typedef_
 	GET_SENSOR_LMS6DSOX		get_sensor_lsm6dsox;
 	GET_SENSOR_BMP390		get_sensor_bmp390;
 	GET_SENSOR_H3LIS331DL	get_sensor_h3lis331dl;
+	GET_SENSOR_H3LIS331DL_FS	get_sensor_h3lis331dl_fs;
+	SET_SENSOR_H3LIS331DL_FS	set_sensor_h3lis331dl_fs;
 
 	GET_SENSOR_HV_TEMP		get_sensor_hv_temp;
 	GET_SENSOR_LV_TEMP		get_sensor_lv_temp;

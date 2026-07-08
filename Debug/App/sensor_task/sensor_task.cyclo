@@ -1,0 +1,4 @@
+../App/sensor_task/sensor_task.c:43:6:Sensor_ADC_Init	1
+../App/sensor_task/sensor_task.c:49:7:Sensor_I2C_Init	4
+../App/sensor_task/sensor_task.c:73:6:Sensor_I2C_task	5
+../App/sensor_task/sensor_task.c:95:6:Sensor_ADC_task	1

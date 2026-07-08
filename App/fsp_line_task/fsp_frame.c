@@ -165,8 +165,9 @@ uint8_t FSP_Line_Process(void)
 		bool hv_ovv_flag = ps_FSP_RX -> Payload.reset_ovv_flag.HV_OVV_flag;
 		bool lv_ovv_flag = ps_FSP_RX -> Payload.reset_ovv_flag.LV_OVV_flag;
 
-		db_cap_write(DB_ID_CAP_HV_OVV_FLAG, &hv_ovv_flag);
-		db_cap_write(DB_ID_CAP_LV_OVV_FLAG, &lv_ovv_flag);
+		if (hv_ovv_flag == false) db_cap_write(DB_ID_CAP_HV_OVV_FLAG, &hv_ovv_flag);
+
+		if (lv_ovv_flag == false)db_cap_write(DB_ID_CAP_LV_OVV_FLAG, &lv_ovv_flag);
 
 		return 1;
 	}
@@ -285,7 +286,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_GYRO:
 	{
-		LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+		// LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
 		int32_t gyro_x = (int32_t)(LSM6DSOX_Data.Gyro.x * 1000);
 		int32_t gyro_y = (int32_t)(LSM6DSOX_Data.Gyro.y * 1000);
@@ -313,7 +314,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_ACCEL:
 	{
-		LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+		// LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
 		int32_t accel_x = (int32_t)(LSM6DSOX_Data.Accel.x * 1000);
 		int32_t accel_y = (int32_t)(LSM6DSOX_Data.Accel.y * 1000);
@@ -341,7 +342,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_LSM6DSOX:
 	{
-		LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+		// LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
 		int32_t gyro_x = (int32_t)(LSM6DSOX_Data.Gyro.x * 1000);
 		int32_t gyro_y = (int32_t)(LSM6DSOX_Data.Gyro.y * 1000);
@@ -389,7 +390,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_TEMP:
 	{
-		bmp390_temp_press_update(&BMP390_Val);
+		// bmp390_temp_press_update(&BMP390_Val);
 
 		int32_t temp 	= (int32_t)(BMP390_Val.temperature * 1000);
 
@@ -405,7 +406,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_PRESSURE:
 	{
-		bmp390_temp_press_update(&BMP390_Val);
+		// bmp390_temp_press_update(&BMP390_Val);
 
 		int32_t pressure = (int32_t)(BMP390_Val.pressure  * 1000);
 
@@ -421,7 +422,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_ALTITUDE:
 	{
-		bmp390_temp_press_update(&BMP390_Val);
+		// bmp390_temp_press_update(&BMP390_Val);
 
 		int32_t altitude = (int32_t)(BMP390_Val.altitude  * 1000);
 
@@ -437,7 +438,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_BMP390:
 	{
-		bmp390_temp_press_update(&BMP390_Val);
+		// bmp390_temp_press_update(&BMP390_Val);
 		int32_t temp 	= (int32_t)(BMP390_Val.temperature * 1000);
 		int32_t pressure = (int32_t)(BMP390_Val.pressure  * 1000);
 		int32_t altitude = (int32_t)(BMP390_Val.altitude  * 1000);
@@ -465,7 +466,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_H3LIS331DL:
 	{
-		H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
+		// H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
 
 		int32_t accel_x = (int32_t)(H3LIS331DL_Data.x * 1000);
 		int32_t accel_y = (int32_t)(H3LIS331DL_Data.y * 1000);
@@ -492,11 +493,42 @@ uint8_t FSP_Line_Process(void)
 		break;
 	}
 	case FSP_CMD_SET_SENSOR_H3LIS331DL_FS:
-	{
+	{	
+		uint8_t fs_value = ps_FSP_RX -> Payload.set_sensor_h3lis331dl_fs.fs_value;
+
+		if (fs_value == 1) {
+			H3LIS331DL_Set_FS(H3LIS331DL_FS_100G);
+		} 
+		else if (fs_value == 2) 
+		{
+			H3LIS331DL_Set_FS(H3LIS331DL_FS_200G);
+		} 
+		else if (fs_value == 4) 
+		{
+			H3LIS331DL_Set_FS(H3LIS331DL_FS_400G);
+		} 
 		break;
 	}
 	case FSP_CMD_GET_SENSOR_H3LIS331DL_FS:
 	{
+		H3LIS331DL_FS_t fs_value = H3LIS331DL_Get_FS();
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_H3LIS331DL_FS;
+
+		if(fs_value == H3LIS331DL_FS_100G) {
+			ps_FSP_TX -> Payload.get_sensor_h3lis331dl_fs.fs_value = 1;
+		} 
+		else if (fs_value == H3LIS331DL_FS_200G) 
+		{
+			ps_FSP_TX -> Payload.get_sensor_h3lis331dl_fs.fs_value = 2;
+		} 
+		else if (fs_value == H3LIS331DL_FS_400G) 
+		{
+			ps_FSP_TX -> Payload.get_sensor_h3lis331dl_fs.fs_value = 4;
+		} 
+
+
+		fsp_print(2);
 		break;
 	}
 	case FSP_CMD_GET_SENSOR_HV_TEMP:
