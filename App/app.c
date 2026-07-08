@@ -19,7 +19,7 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                         {&Cap_Controller_Monitor_Task, 	(void *) 0, 10, 	0,	true},
                         {&FSP_Line_Task,				(void *) 0,	20, 	0, 	true},
                         {&Debug_CMD_Line_Task,			(void *) 0,	50,		0, 	true},
-						{&Sensor_I2C_task,				(void *) 0,	1000,	0, 	true},
+						{&Sensor_I2C_task,				(void *) 0,	500,	0, 	true},
 						{&Sensor_ADC_task,				(void *) 0,	10000,	0, 	true},
                         {&Status_Led,					(void *) 0,	100000,	0,	true},
                 };

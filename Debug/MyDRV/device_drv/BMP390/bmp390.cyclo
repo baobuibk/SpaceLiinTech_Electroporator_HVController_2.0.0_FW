@@ -1,0 +1,12 @@
+../MyDRV/device_drv/BMP390/bmp390.c:21:6:BMP390_read_raw_calibration	3
+../MyDRV/device_drv/BMP390/bmp390.c:52:6:BMP390_convert_calibration	1
+../MyDRV/device_drv/BMP390/bmp390.c:70:6:BMP390_set_mode	3
+../MyDRV/device_drv/BMP390/bmp390.c:94:6:BMP390_init	2
+../MyDRV/device_drv/BMP390/bmp390.c:111:6:BMP390_read_raw_temp_press	3
+../MyDRV/device_drv/BMP390/bmp390.c:128:6:BMP390_compensate_temperature	1
+../MyDRV/device_drv/BMP390/bmp390.c:135:6:BMP390_compensate_pressure	1
+../MyDRV/device_drv/BMP390/bmp390.c:158:6:BMP390_calculate_altitude	2
+../MyDRV/device_drv/BMP390/bmp390.c:167:6:bmp390_temp_press_update	2
+../MyDRV/device_drv/BMP390/bmp390.c:182:8:bmp390_get_temperature	2
+../MyDRV/device_drv/BMP390/bmp390.c:188:8:bmp390_get_press	2
+../MyDRV/device_drv/BMP390/bmp390.c:194:8:bmp390_get_altitude	2
