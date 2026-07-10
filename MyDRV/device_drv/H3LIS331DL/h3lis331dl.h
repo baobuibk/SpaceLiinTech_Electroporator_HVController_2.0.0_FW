@@ -22,10 +22,14 @@
 // #define H3LIS331DL_I2C_ADDR					0x18
 #define H3LIS331DL_I2C_ADDR					0x19
 #define H3LIS331DL_CTRL_REG1				0x20
+#define H3LIS331DL_CTRL_REG3				0x22
 #define H3LIS331DL_CTRL_REG2				0x21
 #define H3LIS331DL_CTRL_REG4				0x23
 #define H3LIS331DL_OUT_X_L					0x28
 #define H3LIS331DL_OUT_X_L_MULTI			0xA8
+
+#define H3LIS331DL_INT1_CFG				    0x30
+#define H3LIS331DL_INT1_THS				    0x32
 
 #define H3LIS_SENSITIVITY_100G              49.0f
 #define H3LIS_SENSITIVITY_200G              98.0f
@@ -37,6 +41,17 @@ typedef enum {
 	H3LIS331DL_FS_200G = 0x10, // FS bits: 01
 	H3LIS331DL_FS_400G = 0x30  // FS bits: 11
 } H3LIS331DL_FS_t;
+
+typedef enum {
+    H3LIS331DL_AXIS_X = 0,
+    H3LIS331DL_AXIS_Y = 1,
+    H3LIS331DL_AXIS_Z = 2
+} H3LIS331DL_Axis_t;
+
+typedef enum {
+    H3LIS331DL_INT_HIGH = 0,
+    H3LIS331DL_INT_LOW = 1
+} H3LIS331DL_IntCondition_t;
 
 typedef struct H3LIS331DL_RawData
 {
@@ -53,11 +68,16 @@ typedef struct H3LIS331DL_Data
 	float z;
 } H3LIS331DL_Data_t;
 
+
 I2C_Status_t H3LIS331DL_Init(void);
 I2C_Status_t H3LIS331DL_Read_ID(uint8_t *ID);
 I2C_Status_t H3LIS331DL_Get_Accel(H3LIS331DL_Data_t *Data);
 
 I2C_Status_t H3LIS331DL_Set_FS(H3LIS331DL_FS_t fs);
 H3LIS331DL_FS_t H3LIS331DL_Get_FS(void);
+
+I2C_Status_t H3LIS331DL_Set_Interrupt_Threshold(float threshold_g);
+I2C_Status_t H3LIS331DL_Get_Interrupt_Threshold(float *threshold_g);
+I2C_Status_t H3LIS331DL_Enable_INT1_All(bool enable);
 
 #endif /* SENSOR_I2C_H3LIS331DL_H3LIS331DL_H_ */

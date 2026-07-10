@@ -30,6 +30,11 @@ typedef enum _FSP_CMD_typedef_
 	FSP_CMD_GET_CAP_ALL,
 	FSP_CMD_GET_OVV_FLAG,
 
+	FSP_CMD_SET_THRESHOLD_ACCEL,
+	FSP_CMD_GET_THRESHOLD_ACCEL,
+	FSP_CMD_SET_AUTO_ACCEL,
+	FSP_CMD_AUTO_ACCEL_TRIGGER,
+
 	FSP_CMD_MEASURE_VOLT,
 
 	FSP_CMD_GET_SENSOR_GYRO,
@@ -159,6 +164,7 @@ typedef struct _GET_CAP_VOLT
 
 }GET_CAP_VOLT;
 
+
 typedef struct _MEASURE_VOLT_
 {
 	uint8_t 	HV_raw_volt_high;
@@ -204,7 +210,7 @@ typedef struct _GET_SENSOR_H3LIS331DL_FS_
 typedef struct _SET_SENSOR_H3LIS331DL_FS_
 {
 	uint8_t		fs_value;
-	
+
 }SET_SENSOR_H3LIS331DL_FS;
 
 
@@ -222,11 +228,35 @@ typedef struct _GET_SENSOR_LV_TEMP_
 
 }GET_SENSOR_LV_TEMP;
 
+typedef struct _AUTO_ACCEL_TRIGGER_
+{
+	uint8_t		trigger;
 
+}AUTO_ACCEL_TRIGGER;
 
+typedef struct _SET_AUTO_ACCEL_
+{
+	uint8_t		auto_accel_enable;
 
+}SET_AUTO_ACCEL;
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~  GET SENSOR VALUE ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+typedef struct _SET_THRESHOLD_ACCEL_
+{
+	uint8_t		threshold_x_mg[4]; // Threshold for X-axis in milli-g
+	uint8_t		threshold_y_mg[4]; // Threshold for Y-axis in milli-g
+	uint8_t		threshold_z_mg[4]; // Threshold for Z-axis in milli-g
+	uint8_t		threshold_total_mg[4];    // Threshold in g
+
+}SET_THRESHOLD_ACCEL;
+
+typedef struct _GET_THRESHOLD_ACCEL_
+{
+	uint8_t		threshold_x_mg[4]; // Threshold for X-axis in milli-g
+	uint8_t		threshold_y_mg[4]; // Threshold for Y-axis in milli-g
+	uint8_t		threshold_z_mg[4]; // Threshold for Z-axis in milli-g
+	uint8_t		threshold_total_mg[4];    // Threshold in g
+
+}GET_THRESHOLD_ACCEL;
 
 
 
@@ -262,6 +292,11 @@ typedef union _FSP_Payload_Frame_typedef_
 	GET_CAP_RELEASE			get_cap_release;
 
 	MEASURE_VOLT 			measure_volt;
+
+	SET_THRESHOLD_ACCEL		set_threshold_accel;
+	GET_THRESHOLD_ACCEL		get_threshold_accel;
+	SET_AUTO_ACCEL			set_auto_accel;
+	AUTO_ACCEL_TRIGGER		auto_accel_trigger;
 
 	GET_SENSOR_LMS6DSOX		get_sensor_lsm6dsox;
 	GET_SENSOR_BMP390		get_sensor_bmp390;
