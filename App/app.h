@@ -41,6 +41,7 @@
 #include "cap_controller_task.h"
 #include "fsp_line_task.h"
 #include "sensor_task.h"
+#include "auto_pulsing_task.h"
 
 
 typedef enum

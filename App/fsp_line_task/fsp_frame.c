@@ -554,14 +554,56 @@ uint8_t FSP_Line_Process(void)
 		fsp_print(3);
 		break;
 	}
+	case FSP_CMD_SET_THRESHOLD_ACCEL:
+	{
+		int32_t threshold_accel_mg = 	(int32_t)ps_FSP_RX->Payload.set_threshold_accel.threshold_total_mg[0]|
+                              	  		((int32_t)ps_FSP_RX->Payload.set_threshold_accel.threshold_total_mg[1] << 8)|
+								  		((int32_t)ps_FSP_RX->Payload.set_threshold_accel.threshold_total_mg[2] << 16)|
+								  		((int32_t)ps_FSP_RX->Payload.set_threshold_accel.threshold_total_mg[3] << 24);
+
+		float threshold_accel_g = (float)threshold_accel_mg / 1000; //convert to "g" 
+
+		H3LIS331DL_Set_Interrupt_Threshold(threshold_accel_g);
+
+		break;
+	}
+	case FSP_CMD_GET_THRESHOLD_ACCEL:
+	{
+		float thresholde_accel_g = 0.0f;
+		H3LIS331DL_Get_Interrupt_Threshold(&thresholde_accel_g);
+
+		int32_t threshold_accel_mg = (int32_t)(thresholde_accel_g * 1000);
+
+		ps_FSP_TX -> CMD = FSP_CMD_GET_THRESHOLD_ACCEL;
+		ps_FSP_TX -> Payload.get_threshold_accel.threshold_total_mg[0] = (uint8_t)(threshold_accel_mg & 0xFF);
+		ps_FSP_TX -> Payload.get_threshold_accel.threshold_total_mg[1] = (uint8_t)((threshold_accel_mg >> 8) & 0xFF);
+		ps_FSP_TX -> Payload.get_threshold_accel.threshold_total_mg[2] = (uint8_t)((threshold_accel_mg >> 16) & 0xFF);
+		ps_FSP_TX -> Payload.get_threshold_accel.threshold_total_mg[3] = (uint8_t)((threshold_accel_mg >> 24) & 0xFF);
+
+		fsp_print(17);
+		
+		break;
+	}
+	case FSP_CMD_SET_AUTO_ACCEL:
+	{
+		bool auto_pulsing_en = ps_FSP_RX -> Payload.set_auto_accel.auto_accel_enable;
+		if (auto_pulsing_en == true){
+			AP_Mode = AP_MODE_ON;
+		}
+		else if(auto_pulsing_en == false){
+			AP_Mode = AP_MODE_OFF;
+		}
+		H3LIS331DL_Enable_INT1_All(auto_pulsing_en);
+		break;
+	}
 	default:
 		return 0;
-
 	}
 
 	return 1;
 }
 
+/*---------------------------------------------------- STATIC FUNCTION ---------------------------------------------------*/
 
 static void fsp_print(uint8_t packet_length)
 {

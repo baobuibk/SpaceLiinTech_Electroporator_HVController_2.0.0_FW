@@ -25,6 +25,7 @@ OBJCOPY_BIN :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 App \
+App/auto_pulsing_task \
 App/cap_controller_task \
 App/cmd_line_task \
 App/database \

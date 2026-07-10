@@ -29,6 +29,7 @@ RM := rm -rf
 -include App/database/subdir.mk
 -include App/cmd_line_task/subdir.mk
 -include App/cap_controller_task/subdir.mk
+-include App/auto_pulsing_task/subdir.mk
 -include App/subdir.mk
 -include objects.mk
 

@@ -1,4 +1,5 @@
 "./App/app.o"
+"./App/auto_pulsing_task/auto_pulsing_task.o"
 "./App/cap_controller_task/cap_controller_task.o"
 "./App/cmd_line_task/cli_command.o"
 "./App/cmd_line_task/debug_cmd_task.o"
