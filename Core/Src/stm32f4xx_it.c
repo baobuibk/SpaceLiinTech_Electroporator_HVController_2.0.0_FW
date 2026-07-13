@@ -215,7 +215,8 @@ void EXTI1_IRQHandler(void)
   {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_1);
     /* USER CODE BEGIN LL_EXTI_LINE_1 */
-	LV_OVV_Flag_Handle();
+    LV_OVV_Flag_Handle();
+
     /* USER CODE END LL_EXTI_LINE_1 */
   }
   /* USER CODE BEGIN EXTI1_IRQn 1 */
@@ -236,6 +237,7 @@ void EXTI2_IRQHandler(void)
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_2);
     /* USER CODE BEGIN LL_EXTI_LINE_2 */
     Auto_Pulsing_Trigger_ISR_Handle();
+
     /* USER CODE END LL_EXTI_LINE_2 */
   }
   /* USER CODE BEGIN EXTI2_IRQn 1 */
@@ -256,6 +258,7 @@ void EXTI3_IRQHandler(void)
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_3);
     /* USER CODE BEGIN LL_EXTI_LINE_3 */
     HV_OVV_Flag_Handle();
+
     /* USER CODE END LL_EXTI_LINE_3 */
   }
   /* USER CODE BEGIN EXTI3_IRQn 1 */
@@ -270,6 +273,7 @@ void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
 	Cap_Controller_ADC_IRQHandler();
+
   /* USER CODE END ADC_IRQn 0 */
   /* USER CODE BEGIN ADC_IRQn 1 */
 
@@ -282,7 +286,6 @@ void ADC_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-
 	UART_Driver_ISR(&GPP_UART);
 
   /* USER CODE END USART1_IRQn 0 */
@@ -297,10 +300,9 @@ void USART1_IRQHandler(void)
 void USART6_IRQHandler(void)
 {
   /* USER CODE BEGIN USART6_IRQn 0 */
-
+	UART_Driver_ISR(&DEBUG_UART);
   /* USER CODE END USART6_IRQn 0 */
   /* USER CODE BEGIN USART6_IRQn 1 */
-	UART_Driver_ISR(&DEBUG_UART);
 
   /* USER CODE END USART6_IRQn 1 */
 }

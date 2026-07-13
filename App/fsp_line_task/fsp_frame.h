@@ -167,10 +167,8 @@ typedef struct _GET_CAP_VOLT
 
 typedef struct _MEASURE_VOLT_
 {
-	uint8_t 	HV_raw_volt_high;
-	uint8_t 	HV_raw_volt_low;
-	uint8_t 	LV_raw_volt_high;
-	uint8_t 	LV_raw_volt_low;
+	uint8_t 	HV_raw_volt[4];
+	uint8_t 	LV_raw_volt[2];
 
 }MEASURE_VOLT;
 

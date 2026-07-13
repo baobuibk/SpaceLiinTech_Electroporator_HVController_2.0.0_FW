@@ -110,7 +110,7 @@ bool     Cap_Get_is_Charge(Cap_Profile_t prf_cap_x);
 bool     Cap_Get_is_Discharge(Cap_Profile_t prf_cap_x);
 bool     Cap_Get_is_Notified(Cap_Profile_t prf_cap_x);
 
-uint16_t Cap_Measure_Volt(Cap_Profile_t prf_cap_x);
+float Cap_Measure_Volt(Cap_Profile_t prf_cap_x);
 
 /* :::::::::: Cap Controller Driver Interupt Handler ::::::::::::: */
 void Cap_Controller_ADC_IRQHandler(void);

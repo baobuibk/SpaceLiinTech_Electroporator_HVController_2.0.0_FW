@@ -158,6 +158,8 @@ uint8_t FSP_Line_Process(void)
 		ps_FSP_TX -> Payload.fsp_response.response =true;
 		fsp_print(2);
 
+		UART_Driver_SendString(&DEBUG_UART,"\r\nCAP SET DISCHARGE RECEIVED");
+
 		return 1;
 	}
 	case FSP_CMD_RESET_CAP_OVV:
@@ -270,16 +272,22 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_MEASURE_VOLT:
 	{
-		uint16_t hv_raw_volt = Cap_Measure_Volt(CAP_PRF_HV);
-		uint16_t lv_raw_volt = Cap_Measure_Volt(CAP_PRF_LV);
+		float hv_raw_mvolt = Cap_Measure_Volt(CAP_PRF_HV) * 1000.0f;
+		float lv_raw_mvolt = Cap_Measure_Volt(CAP_PRF_LV) * 1000.0f;
+		uint32_t hv_volt = (uint32_t)hv_raw_mvolt;
+		uint16_t lv_volt = (uint16_t)lv_raw_mvolt;
 
 		ps_FSP_TX -> CMD = FSP_CMD_MEASURE_VOLT;
-		ps_FSP_TX -> Payload.measure_volt.HV_raw_volt_high = (uint8_t)(hv_raw_volt >> 8);
-		ps_FSP_TX -> Payload.measure_volt.HV_raw_volt_low = (uint8_t)(hv_raw_volt & 0xFF);
-		ps_FSP_TX -> Payload.measure_volt.LV_raw_volt_high = (uint8_t)(lv_raw_volt >> 8);
-		ps_FSP_TX -> Payload.measure_volt.LV_raw_volt_low = (uint8_t)(lv_raw_volt & 0xFF);
+		ps_FSP_TX -> Payload.measure_volt.HV_raw_volt[0] = (uint8_t)(hv_volt & 0xFF);
+		ps_FSP_TX -> Payload.measure_volt.HV_raw_volt[1] = (uint8_t)((hv_volt >> 8) & 0xFF);
+		ps_FSP_TX -> Payload.measure_volt.HV_raw_volt[2] = (uint8_t)((hv_volt >> 16) & 0xFF);
+		ps_FSP_TX -> Payload.measure_volt.HV_raw_volt[3] = (uint8_t)((hv_volt >> 24) & 0xFF);
+		ps_FSP_TX -> Payload.measure_volt.LV_raw_volt[0] = (uint8_t)(lv_volt & 0xFF);
+		ps_FSP_TX -> Payload.measure_volt.LV_raw_volt[1] = (uint8_t)((lv_volt >> 8) & 0xFF);
 
-		fsp_print(5);
+		fsp_print(7);
+
+		UART_Driver_SendString(&DEBUG_UART,"\r\nCAP MEASURE VOLT");
 
 		return 1;
 
