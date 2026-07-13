@@ -31,6 +31,12 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
+uint32_t cntit1 = 0;
+uint32_t cntit2 = 0;
+uint32_t cntit3 = 0;
+uint32_t cntit4 = 0;
+uint32_t cntit5 = 0;
+
 
 /* USER CODE END TD */
 
@@ -188,6 +194,7 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
+	cntit1++;
 	SchedulerSysTickIntHandler();
   /* USER CODE END SysTick_IRQn 0 */
 
@@ -215,7 +222,8 @@ void EXTI1_IRQHandler(void)
   {
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_1);
     /* USER CODE BEGIN LL_EXTI_LINE_1 */
-	LV_OVV_Flag_Handle();
+    LV_OVV_Flag_Handle();
+
     /* USER CODE END LL_EXTI_LINE_1 */
   }
   /* USER CODE BEGIN EXTI1_IRQn 1 */
@@ -236,6 +244,7 @@ void EXTI2_IRQHandler(void)
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_2);
     /* USER CODE BEGIN LL_EXTI_LINE_2 */
     Auto_Pulsing_Trigger_ISR_Handle();
+
     /* USER CODE END LL_EXTI_LINE_2 */
   }
   /* USER CODE BEGIN EXTI2_IRQn 1 */
@@ -256,6 +265,7 @@ void EXTI3_IRQHandler(void)
     LL_EXTI_ClearFlag_0_31(LL_EXTI_LINE_3);
     /* USER CODE BEGIN LL_EXTI_LINE_3 */
     HV_OVV_Flag_Handle();
+
     /* USER CODE END LL_EXTI_LINE_3 */
   }
   /* USER CODE BEGIN EXTI3_IRQn 1 */
@@ -270,6 +280,7 @@ void ADC_IRQHandler(void)
 {
   /* USER CODE BEGIN ADC_IRQn 0 */
 	Cap_Controller_ADC_IRQHandler();
+
   /* USER CODE END ADC_IRQn 0 */
   /* USER CODE BEGIN ADC_IRQn 1 */
 
@@ -282,7 +293,6 @@ void ADC_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-
 	UART_Driver_ISR(&GPP_UART);
 
   /* USER CODE END USART1_IRQn 0 */

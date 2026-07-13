@@ -861,8 +861,10 @@ static inline void Flyback_Set_Duty(Cap_Control_t* p_cap_x, uint32_t _Duty)
 }
 
 /* :::::::::: Cap Controller Notify :::::::: */
+int cnt300 = 0;
 static void Cap_Controller_Charge_Monitor_300V(void)
 {
+	cnt300++;
 	bool hv_cmd_charge = false;
 	CAP_State_t hv_state;
 	uint16_t hv_set_volt;
