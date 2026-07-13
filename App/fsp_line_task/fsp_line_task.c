@@ -55,10 +55,9 @@ void FSP_Line_Task_Init(void)
 
 }
 
-int cntfsp = 0;
+
 void FSP_Line_Task (void*)
 {
-	cntfsp++;
 	uint8_t FSP_return, time_out = 0;
 
 	for (time_out = 50; (UART_Driver_IsDataAvailable(&GPP_UART)) && (time_out != 0); time_out--)

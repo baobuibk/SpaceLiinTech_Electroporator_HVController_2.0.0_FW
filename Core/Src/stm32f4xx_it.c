@@ -31,12 +31,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-uint32_t cntit1 = 0;
-uint32_t cntit2 = 0;
-uint32_t cntit3 = 0;
-uint32_t cntit4 = 0;
-uint32_t cntit5 = 0;
-
 
 /* USER CODE END TD */
 
@@ -194,7 +188,6 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-	cntit1++;
 	SchedulerSysTickIntHandler();
   /* USER CODE END SysTick_IRQn 0 */
 
@@ -304,13 +297,14 @@ void USART1_IRQHandler(void)
 /**
   * @brief This function handles USART6 global interrupt.
   */
+uint32_t ua6_cnt = 0;
 void USART6_IRQHandler(void)
 {
   /* USER CODE BEGIN USART6_IRQn 0 */
-
+	ua6_cnt++;
+	UART_Driver_ISR(&DEBUG_UART);
   /* USER CODE END USART6_IRQn 0 */
   /* USER CODE BEGIN USART6_IRQn 1 */
-	UART_Driver_ISR(&DEBUG_UART);
 
   /* USER CODE END USART6_IRQn 1 */
 }

@@ -49,7 +49,7 @@
 ../App/cap_controller_task/cap_controller_task.c:553:10:Cap_Get_Set_Volt	3
 ../App/cap_controller_task/cap_controller_task.c:564:6:Cap_Get_is_Charge	3
 ../App/cap_controller_task/cap_controller_task.c:575:6:Cap_Get_is_Discharge	3
-../App/cap_controller_task/cap_controller_task.c:585:10:Cap_Measure_Volt	3
+../App/cap_controller_task/cap_controller_task.c:585:7:Cap_Measure_Volt	3
 ../App/cap_controller_task/cap_controller_task.c:613:6:Cap_Controller_ADC_IRQHandler	3
 ../App/cap_controller_task/cap_controller_task.c:650:6:HV_OVV_Flag_Handle	1
 ../App/cap_controller_task/cap_controller_task.c:666:6:LV_OVV_Flag_Handle	1
@@ -64,6 +64,6 @@
 ../App/cap_controller_task/cap_controller_task.c:968:13:Cap_Controller_Charge_Monitor_50V	11
 ../App/cap_controller_task/cap_controller_task.c:1055:13:Cap_Controller_Discharge_Monitor_50V	3
 ../App/cap_controller_task/cap_controller_task.c:1075:17:Cap_Calib_Calculate	1
-../App/cap_controller_task/cap_controller_task.c:1080:17:Cap_ADC_to_Volt	1
+../App/cap_controller_task/cap_controller_task.c:1080:14:Cap_ADC_to_Volt	1
 ../App/cap_controller_task/cap_controller_task.c:1085:13:Cap_Set_Volt_Internal	1
 ../App/cap_controller_task/cap_controller_task.c:1091:13:fsp_print	1

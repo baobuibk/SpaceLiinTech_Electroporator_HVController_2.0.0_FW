@@ -157,7 +157,7 @@ static void Cap_Controller_Charge_Monitor_50V(void);
 static void Cap_Controller_Discharge_Monitor_50V(void);
 
 static uint16_t Cap_Calib_Calculate(Cap_Control_t* p_cap_x, uint16_t raw_voltage);
-static uint16_t Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value);
+static float Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value);
 static void Cap_Set_Volt_Internal(Cap_Control_t* p_cap_x, uint16_t set_voltage);
 
 static void fsp_print(uint8_t packet_length);
@@ -582,10 +582,10 @@ bool Cap_Get_is_Discharge(Cap_Profile_t prf_cap_x)
     return cap_cmd_discharge;
 }
 
-uint16_t Cap_Measure_Volt(Cap_Profile_t prf_cap_x)
+float Cap_Measure_Volt(Cap_Profile_t prf_cap_x)
 {
     uint16_t ADC_value_temp = 0;
-    uint16_t Raw_value_temp = 0;
+    float Raw_value_temp = 0;
     Cap_Control_t* p_cap_x;
 
     if (prf_cap_x == CAP_PRF_HV)
@@ -605,7 +605,7 @@ uint16_t Cap_Measure_Volt(Cap_Profile_t prf_cap_x)
         db_cap_write(DB_ID_CAP_LV_VOLT_RAW, &Raw_value_temp);
     }
 
-    return Cap_ADC_to_Volt(p_cap_x, ADC_value_temp);
+    return Raw_value_temp;
 }
 
 
@@ -861,10 +861,10 @@ static inline void Flyback_Set_Duty(Cap_Control_t* p_cap_x, uint32_t _Duty)
 }
 
 /* :::::::::: Cap Controller Notify :::::::: */
-int cnt300 = 0;
+
 static void Cap_Controller_Charge_Monitor_300V(void)
 {
-	cnt300++;
+
 	bool hv_cmd_charge = false;
 	CAP_State_t hv_state;
 	uint16_t hv_set_volt;
@@ -1077,9 +1077,9 @@ static uint16_t Cap_Calib_Calculate(Cap_Control_t* p_cap_x, uint16_t raw_voltage
     return raw_voltage / p_cap_x->calib_coefficient;
 }
 
-static uint16_t Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value)
+static float Cap_ADC_to_Volt(Cap_Control_t* p_cap_x, uint16_t ADC_value)
 {
-   return (uint16_t) (ADC_value * p_cap_x->calib_coefficient);
+   return (float) (ADC_value * p_cap_x->calib_coefficient);
 }
 
 static void Cap_Set_Volt_Internal(Cap_Control_t* p_cap_x, uint16_t set_voltage)
