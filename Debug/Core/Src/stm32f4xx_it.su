@@ -14,4 +14,4 @@
 ../Core/Src/stm32f4xx_it.c:251:6:EXTI3_IRQHandler	8	static
 ../Core/Src/stm32f4xx_it.c:272:6:ADC_IRQHandler	8	static
 ../Core/Src/stm32f4xx_it.c:286:6:USART1_IRQHandler	8	static
-../Core/Src/stm32f4xx_it.c:301:6:USART6_IRQHandler	8	static
+../Core/Src/stm32f4xx_it.c:300:6:USART6_IRQHandler	8	static

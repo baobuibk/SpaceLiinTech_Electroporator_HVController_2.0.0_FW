@@ -297,11 +297,9 @@ void USART1_IRQHandler(void)
 /**
   * @brief This function handles USART6 global interrupt.
   */
-uint32_t ua6_cnt = 0;
 void USART6_IRQHandler(void)
 {
   /* USER CODE BEGIN USART6_IRQn 0 */
-	ua6_cnt++;
 	UART_Driver_ISR(&DEBUG_UART);
   /* USER CODE END USART6_IRQn 0 */
   /* USER CODE BEGIN USART6_IRQn 1 */
