@@ -51,17 +51,17 @@ void  Sensor_I2C_Init(void) {
 	I2C_Status_t I2C_status = I2C_Error;
 	bool bmp_ret = false;
 
-//	LL_mDelay(300);
+	LL_mDelay(300);
 	I2C_status = LSM6DSOX_Init();
 	if (I2C_status == I2C_Success) Sensor_list.lsm6d = 1;
 	else Sensor_list.lsm6d = 0;
 
-//	LL_mDelay(300);
+	LL_mDelay(300);
 	I2C_status = H3LIS331DL_Init();
 	if (I2C_status == I2C_Success) Sensor_list.h3lis = 1;
 	else Sensor_list.h3lis = 0;
 
-//	LL_mDelay(300);
+	LL_mDelay(300);
 	bmp_ret = BMP390_init();
 	if (bmp_ret == true) Sensor_list.bmp390 = 1;
 	else Sensor_list.bmp390 = 0;
