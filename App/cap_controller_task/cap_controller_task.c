@@ -259,13 +259,13 @@ void Cap_Controller_Charge_Task(void*)
 	if (hv_cmd_charge == true){
 		if(s_Cap_300V.raw_ADC_Value >= (s_Cap_300V.set_charge_voltage_ADC*0.99)){
 			if(s_Cap_300V.charge_state == CAP_SET_FREE_CHARGE_STATE){
-				if(s_Cap_300V.is_notified_on == true){
-					char msg[128];
-					sprintf(msg,"HV CAP FINISHED CHARGING TO %dV\n\r", hv_set_volt);
-					UART_Driver_SendString(CMD_line_handle,msg);
-
-					s_Cap_300V.is_notified_on = false;
-				}
+//				if(s_Cap_300V.is_notified_on == true){
+//					char msg[128];
+//					sprintf(msg,"HV CAP FINISHED CHARGING TO %dV\n\r", hv_set_volt);
+//					UART_Driver_SendString(CMD_line_handle,msg);
+//
+//					s_Cap_300V.is_notified_on = false;
+//				}
 			}
         CAP_State_t hv_state = CAP_IS_FINISH_CHARGING;
         db_cap_write(DB_ID_CAP_HV_STATE, &hv_state);
@@ -281,13 +281,6 @@ void Cap_Controller_Charge_Task(void*)
 	}
 	else if(hv_cmd_discharge == false){
 		LL_GPIO_ResetOutputPin(DISCHARGE_300V_PORT, DISCHARGE_300V_PIN);
-	}
-
-	if(hv_OVV_flag == true){
-
-	}
-	else if(hv_OVV_flag == false){
-
 	}
 
 	//---PROFILE 50V-----
@@ -306,13 +299,13 @@ void Cap_Controller_Charge_Task(void*)
 	if (lv_cmd_charge == true){
 		if(s_Cap_50V.raw_ADC_Value >= (s_Cap_50V.set_charge_voltage_ADC*0.99)){
 			if(s_Cap_50V.charge_state == CAP_SET_FREE_CHARGE_STATE){
-				if(s_Cap_50V.is_notified_on == true){
-					char msg[128];
-					sprintf(msg,"LV CAP FINISHED CHARGING TO %dV\n\r", lv_set_volt);
-					UART_Driver_SendString(CMD_line_handle,msg);
-
-					s_Cap_50V.is_notified_on = false;
-				}
+//				if(s_Cap_50V.is_notified_on == true){
+//					char msg[128];
+//					sprintf(msg,"LV CAP FINISHED CHARGING TO %dV\n\r", lv_set_volt);
+//					UART_Driver_SendString(CMD_line_handle,msg);
+//
+//					s_Cap_50V.is_notified_on = false;
+//				}
 
 			}
          CAP_State_t lv_state = CAP_IS_FINISH_CHARGING;
@@ -329,13 +322,6 @@ void Cap_Controller_Charge_Task(void*)
 	}
 	else if(lv_cmd_discharge == false){
 		LL_GPIO_ResetOutputPin(DISCHARGE_50V_PORT, DISCHARGE_50V_PIN);
-	}
-
-	if(lv_OVV_flag == true){
-
-	}
-	else if(lv_OVV_flag == false){
-
 	}
 
 }

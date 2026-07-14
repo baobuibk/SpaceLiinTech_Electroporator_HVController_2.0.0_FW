@@ -294,7 +294,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_GYRO:
 	{
-		// LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
 		int32_t gyro_x = (int32_t)(LSM6DSOX_Data.Gyro.x * 1000);
 		int32_t gyro_y = (int32_t)(LSM6DSOX_Data.Gyro.y * 1000);
@@ -322,7 +322,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_ACCEL:
 	{
-		// LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
 		int32_t accel_x = (int32_t)(LSM6DSOX_Data.Accel.x * 1000);
 		int32_t accel_y = (int32_t)(LSM6DSOX_Data.Accel.y * 1000);
@@ -350,7 +350,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_LSM6DSOX:
 	{
-		// LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
 		int32_t gyro_x = (int32_t)(LSM6DSOX_Data.Gyro.x * 1000);
 		int32_t gyro_y = (int32_t)(LSM6DSOX_Data.Gyro.y * 1000);
@@ -398,7 +398,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_TEMP:
 	{
-		// bmp390_temp_press_update(&BMP390_Val);
+		 bmp390_temp_press_update(&BMP390_Val);
 
 		int32_t temp 	= (int32_t)(BMP390_Val.temperature * 1000);
 
@@ -414,7 +414,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_PRESSURE:
 	{
-		// bmp390_temp_press_update(&BMP390_Val);
+		 bmp390_temp_press_update(&BMP390_Val);
 
 		int32_t pressure = (int32_t)(BMP390_Val.pressure  * 1000);
 
@@ -430,7 +430,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_ALTITUDE:
 	{
-		// bmp390_temp_press_update(&BMP390_Val);
+		 bmp390_temp_press_update(&BMP390_Val);
 
 		int32_t altitude = (int32_t)(BMP390_Val.altitude  * 1000);
 
@@ -446,7 +446,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_BMP390:
 	{
-		// bmp390_temp_press_update(&BMP390_Val);
+		 bmp390_temp_press_update(&BMP390_Val);
 		int32_t temp 	= (int32_t)(BMP390_Val.temperature * 1000);
 		int32_t pressure = (int32_t)(BMP390_Val.pressure  * 1000);
 		int32_t altitude = (int32_t)(BMP390_Val.altitude  * 1000);
@@ -474,7 +474,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_H3LIS331DL:
 	{
-		// H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
+		 H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
 
 		int32_t accel_x = (int32_t)(H3LIS331DL_Data.x * 1000);
 		int32_t accel_y = (int32_t)(H3LIS331DL_Data.y * 1000);
