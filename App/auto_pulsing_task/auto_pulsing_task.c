@@ -26,7 +26,7 @@ void Auto_Pulsing_Trigger_ISR_Handle(void){
 		fsp_print(1);
 
 		AP_Mode = AP_MODE_OFF;
-		H3LIS331DL_Enable_INT1_All(false);
+		H3LIS331DL_Enable_INT1_All(&h3lis_dev,false);
 	}
 }
 

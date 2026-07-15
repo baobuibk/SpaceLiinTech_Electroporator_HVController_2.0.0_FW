@@ -294,11 +294,11 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_GYRO:
 	{
-		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+//		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
-		int32_t gyro_x = (int32_t)(LSM6DSOX_Data.Gyro.x * 1000);
-		int32_t gyro_y = (int32_t)(LSM6DSOX_Data.Gyro.y * 1000);
-		int32_t gyro_z = (int32_t)(LSM6DSOX_Data.Gyro.z * 1000);
+		int32_t gyro_x = (int32_t)(lsm6dsox_dev.Data.Gyro.x * 1000);
+		int32_t gyro_y = (int32_t)(lsm6dsox_dev.Data.Gyro.y * 1000);
+		int32_t gyro_z = (int32_t)(lsm6dsox_dev.Data.Gyro.z * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_GYRO;
 		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Gyro_x[0] = (uint8_t)(gyro_x & 0xFF);       
@@ -322,11 +322,11 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_ACCEL:
 	{
-		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+//		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
-		int32_t accel_x = (int32_t)(LSM6DSOX_Data.Accel.x * 1000);
-		int32_t accel_y = (int32_t)(LSM6DSOX_Data.Accel.y * 1000);
-		int32_t accel_z = (int32_t)(LSM6DSOX_Data.Accel.z * 1000);
+		int32_t accel_x = (int32_t)(lsm6dsox_dev.Data.Accel.x * 1000);
+		int32_t accel_y = (int32_t)(lsm6dsox_dev.Data.Accel.y * 1000);
+		int32_t accel_z = (int32_t)(lsm6dsox_dev.Data.Accel.z * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_ACCEL;
 		ps_FSP_TX->Payload.get_sensor_lsm6dsox.Accel_x[0] = (uint8_t)(accel_x & 0xFF);       
@@ -350,15 +350,15 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_LSM6DSOX:
 	{
-		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
+//		 LSM6DSOX_Read_Data(&LSM6DSOX_Data);
 
-		int32_t gyro_x = (int32_t)(LSM6DSOX_Data.Gyro.x * 1000);
-		int32_t gyro_y = (int32_t)(LSM6DSOX_Data.Gyro.y * 1000);
-		int32_t gyro_z = (int32_t)(LSM6DSOX_Data.Gyro.z * 1000);
+		int32_t gyro_x = (int32_t)(lsm6dsox_dev.Data.Gyro.x * 1000);
+		int32_t gyro_y = (int32_t)(lsm6dsox_dev.Data.Gyro.y * 1000);
+		int32_t gyro_z = (int32_t)(lsm6dsox_dev.Data.Gyro.z * 1000);
 
-		int32_t accel_x = (int32_t)(LSM6DSOX_Data.Accel.x * 1000);
-		int32_t accel_y = (int32_t)(LSM6DSOX_Data.Accel.y * 1000);
-		int32_t accel_z = (int32_t)(LSM6DSOX_Data.Accel.z * 1000);
+		int32_t accel_x = (int32_t)(lsm6dsox_dev.Data.Accel.x * 1000);
+		int32_t accel_y = (int32_t)(lsm6dsox_dev.Data.Accel.y * 1000);
+		int32_t accel_z = (int32_t)(lsm6dsox_dev.Data.Accel.z * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_LSM6DSOX;
 
@@ -398,9 +398,9 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_TEMP:
 	{
-		 bmp390_temp_press_update(&BMP390_Val);
+//		 bmp390_temp_press_update(&BMP390_Val);
 
-		int32_t temp 	= (int32_t)(BMP390_Val.temperature * 1000);
+		int32_t temp 	= (int32_t)(bmp390_dev.temperature * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_TEMP;
 
@@ -414,9 +414,9 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_PRESSURE:
 	{
-		 bmp390_temp_press_update(&BMP390_Val);
+//		 bmp390_temp_press_update(&BMP390_Val);
 
-		int32_t pressure = (int32_t)(BMP390_Val.pressure  * 1000);
+		int32_t pressure = (int32_t)(bmp390_dev.pressure  * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_PRESSURE;
 
@@ -430,9 +430,9 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_ALTITUDE:
 	{
-		 bmp390_temp_press_update(&BMP390_Val);
+//		 bmp390_temp_press_update(&BMP390_Val);
 
-		int32_t altitude = (int32_t)(BMP390_Val.altitude  * 1000);
+		int32_t altitude = (int32_t)(bmp390_dev.altitude  * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_ALTITUDE;
 
@@ -446,10 +446,10 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_BMP390:
 	{
-		 bmp390_temp_press_update(&BMP390_Val);
-		int32_t temp 	= (int32_t)(BMP390_Val.temperature * 1000);
-		int32_t pressure = (int32_t)(BMP390_Val.pressure  * 1000);
-		int32_t altitude = (int32_t)(BMP390_Val.altitude  * 1000);
+//		 bmp390_temp_press_update(&BMP390_Val);
+		int32_t temp 	= (int32_t)(bmp390_dev.temperature * 1000);
+		int32_t pressure = (int32_t)(bmp390_dev.pressure  * 1000);
+		int32_t altitude = (int32_t)(bmp390_dev.altitude  * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_BMP390;
 
@@ -474,11 +474,11 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_GET_SENSOR_H3LIS331DL:
 	{
-		 H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
+//		 H3LIS331DL_Get_Accel(&H3LIS331DL_Data);
 
-		int32_t accel_x = (int32_t)(H3LIS331DL_Data.x * 1000);
-		int32_t accel_y = (int32_t)(H3LIS331DL_Data.y * 1000);
-		int32_t accel_z = (int32_t)(H3LIS331DL_Data.z * 1000);
+		int32_t accel_x = (int32_t)(h3lis_dev.Data.x * 1000);
+		int32_t accel_y = (int32_t)(h3lis_dev.Data.y * 1000);
+		int32_t accel_z = (int32_t)(h3lis_dev.Data.z * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_H3LIS331DL;
 		ps_FSP_TX->Payload.get_sensor_h3lis331dl.Accel_x[0] = (uint8_t)(accel_x & 0xFF);       
@@ -505,21 +505,21 @@ uint8_t FSP_Line_Process(void)
 		uint8_t fs_value = ps_FSP_RX -> Payload.set_sensor_h3lis331dl_fs.fs_value;
 
 		if (fs_value == 1) {
-			H3LIS331DL_Set_FS(H3LIS331DL_FS_100G);
+			H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_100G);
 		} 
 		else if (fs_value == 2) 
 		{
-			H3LIS331DL_Set_FS(H3LIS331DL_FS_200G);
+			H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_200G);
 		} 
 		else if (fs_value == 4) 
 		{
-			H3LIS331DL_Set_FS(H3LIS331DL_FS_400G);
+			H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_400G);
 		} 
 		break;
 	}
 	case FSP_CMD_GET_SENSOR_H3LIS331DL_FS:
 	{
-		H3LIS331DL_FS_t fs_value = H3LIS331DL_Get_FS();
+		H3LIS331DL_FS_t fs_value = H3LIS331DL_Get_FS(&h3lis_dev);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_H3LIS331DL_FS;
 
@@ -571,14 +571,14 @@ uint8_t FSP_Line_Process(void)
 
 		float threshold_accel_g = (float)threshold_accel_mg / 1000; //convert to "g" 
 
-		H3LIS331DL_Set_Interrupt_Threshold(threshold_accel_g);
+		H3LIS331DL_Set_Interrupt_Threshold(&h3lis_dev,threshold_accel_g);
 
 		break;
 	}
 	case FSP_CMD_GET_THRESHOLD_ACCEL:
 	{
 		float thresholde_accel_g = 0.0f;
-		H3LIS331DL_Get_Interrupt_Threshold(&thresholde_accel_g);
+		H3LIS331DL_Get_Interrupt_Threshold(&h3lis_dev,&thresholde_accel_g);
 
 		int32_t threshold_accel_mg = (int32_t)(thresholde_accel_g * 1000);
 
@@ -601,7 +601,7 @@ uint8_t FSP_Line_Process(void)
 		else if(auto_pulsing_en == false){
 			AP_Mode = AP_MODE_OFF;
 		}
-		H3LIS331DL_Enable_INT1_All(auto_pulsing_en);
+		H3LIS331DL_Enable_INT1_All(&h3lis_dev,auto_pulsing_en);
 		break;
 	}
 	default:
