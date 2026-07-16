@@ -44,7 +44,7 @@ void  Sensor_I2C_Init(void) {
 	else sens_init_status.lsm6d = SENS_INIT_FAIL;
 
 	init_ret = BMP390_init(&bmp390_dev, &sensor_i2c);
-	if(init_ret == I2C_Success) sens_init_status.bmp390 = SENS_INIT_OK;
+	if(init_ret == true) sens_init_status.bmp390 = SENS_INIT_OK;
 	else sens_init_status.bmp390 = SENS_INIT_FAIL;
 
 	init_ret = H3LIS331DL_Init(&h3lis_dev, &onboard_sensor_i2c);
@@ -150,11 +150,11 @@ void Onboard_Sensor_I2C_EV_ISR(void){
 }
 
 void Sensor_I2C_ER_ISR(void){
-	I2C_EV_IRQHandler(&sensor_i2c);
+	I2C_ER_IRQHandler(&sensor_i2c);
 }
 
 void Onboard_Sensor_I2C_ER_ISR(void){
-	I2C_EV_IRQHandler(&onboard_sensor_i2c);
+	I2C_ER_IRQHandler(&onboard_sensor_i2c);
 }
 
 

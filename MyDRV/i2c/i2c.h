@@ -7,7 +7,7 @@
 #include "stm32f4xx_ll_utils.h"
 #include "stm32f4xx_ll_i2c.h"
 
-#define I2C_TIMEOUT 30000
+#define I2C_TIMEOUT 4000
 
 typedef enum {
     I2C_Success = 0,
