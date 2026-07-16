@@ -3,7 +3,7 @@
  *
  * Created on: Dec 16, 2024
  * Author: SANG HUYNH
- * Updated: Rewritten for object-oriented I2C Handle structure
+ * Updated: Return I2C_Status_t for easier debugging
  */
 
 #ifndef DEVICES_BMP390_BMP390_H_
@@ -68,7 +68,6 @@ typedef enum {
     BMP390_ERROR_READ_TEMPRESS  = 4
 } BMP390_ERROR;
 
-
 typedef struct {
     I2C_Handle_t                *dev_i2c;       // Handle I2C giao tiếp
     BMP390_Raw_Calib_Data_t     NVM;
@@ -86,14 +85,18 @@ typedef struct {
 } BMP390_Handle_t;
 
 
-bool BMP390_init(BMP390_Handle_t *hbmp, I2C_Handle_t *hi2c);
-void BMP390_set_mode(BMP390_Handle_t *hbmp, BMP390_Mode mode);
+/* ---------------- API Khởi tạo & Cấu hình ---------------- */
+I2C_Status_t BMP390_init(BMP390_Handle_t *hbmp, I2C_Handle_t *hi2c);
+I2C_Status_t BMP390_set_mode(BMP390_Handle_t *hbmp, BMP390_Mode mode);
 
-void bmp390_temp_press_update(BMP390_Handle_t *hbmp);
+/* ---------------- API Polling (Blocking) ---------------- */
+I2C_Status_t bmp390_temp_press_update(BMP390_Handle_t *hbmp);
 
-void bmp390_temp_press_update_IT_Start(BMP390_Handle_t *hbmp);
-bool bmp390_temp_press_update_IT_Complete(BMP390_Handle_t *hbmp);
+/* ---------------- API Interrupt (Non-Blocking) ---------------- */
+I2C_Status_t bmp390_temp_press_update_IT_Start(BMP390_Handle_t *hbmp);
+I2C_Status_t bmp390_temp_press_update_IT_Complete(BMP390_Handle_t *hbmp);
 
+/* ---------------- API Getters ---------------- */
 double bmp390_get_temperature(BMP390_Handle_t *hbmp);
 double bmp390_get_press(BMP390_Handle_t *hbmp);
 double bmp390_get_altitude(BMP390_Handle_t *hbmp);

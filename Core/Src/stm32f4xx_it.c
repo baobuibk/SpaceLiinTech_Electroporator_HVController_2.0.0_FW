@@ -56,7 +56,10 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint32_t i2cit1 = 0;
+uint32_t i2cit2 = 0;
+uint32_t i2cit3 = 0;
+uint32_t i2cit4 = 0;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/

@@ -22,8 +22,8 @@
 
 UART_Driver_t*		CMD_line_handle;
 UART_Driver_t  		DEBUG_UART;
-RingBufElement      g_DEBUG_UART_TX_buffer[512];
-RingBufElement      g_DEBUG_UART_RX_buffer[512];
+RingBufElement      g_DEBUG_UART_TX_buffer[1024];
+RingBufElement      g_DEBUG_UART_RX_buffer[4096];
 
 
 CLI_UINT            g_DEBUG_CMD_line_buffer[BYTES_TO_CLI_UINTS(CLI_BUFFER_SIZE)];

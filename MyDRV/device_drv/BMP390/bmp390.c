@@ -3,20 +3,21 @@
  *
  * Created on: Dec 16, 2024
  * Author: SANG HUYNH
- * Updated: Rewritten for object-oriented I2C Handle structure
+ * Updated: Return I2C_Status_t for easier debugging
  */
 
 #include "bmp390.h"
 #include <math.h>
 
 
-static bool BMP390_read_raw_calibration(BMP390_Handle_t *hbmp)
+static I2C_Status_t BMP390_read_raw_calibration(BMP390_Handle_t *hbmp)
 {
     uint8_t calib[21];
+    I2C_Status_t status = I2C_ReadMulti(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_CALIB_DATA_ADDR, calib, 21);
 
-    if (I2C_ReadMulti(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_CALIB_DATA_ADDR, calib, 21) != I2C_Success) {
+    if (status != I2C_Success) {
         hbmp->error = BMP390_ERROR_READ_CALIB;
-        return false;
+        return status;
     }
 
     hbmp->NVM.u16_NVM_T1 = ((uint16_t)calib[1] << 8) | (uint16_t)calib[0];
@@ -34,7 +35,7 @@ static bool BMP390_read_raw_calibration(BMP390_Handle_t *hbmp)
     hbmp->NVM.i8_NVM_P10 = calib[19];
     hbmp->NVM.i8_NVM_P11 = calib[20];
 
-    return true;
+    return I2C_Success;
 }
 
 static void BMP390_convert_calibration(BMP390_Handle_t *hbmp)
@@ -100,36 +101,40 @@ static void BMP390_calculate_altitude(BMP390_Handle_t *hbmp)
  *  API Khởi tạo
  * ========================================================== */
 
-bool BMP390_init(BMP390_Handle_t *hbmp, I2C_Handle_t *hi2c)
+I2C_Status_t BMP390_init(BMP390_Handle_t *hbmp, I2C_Handle_t *hi2c)
 {
     hbmp->dev_i2c = hi2c;
     hbmp->error = BMP390_SUCCESS;
 
-    if (BMP390_read_raw_calibration(hbmp)) {
+    I2C_Status_t status = BMP390_read_raw_calibration(hbmp);
+
+    if (status == I2C_Success) {
         BMP390_convert_calibration(hbmp);
-        BMP390_set_mode(hbmp, BMP390_MODE_NORMAL);
-        return true;
+        status = BMP390_set_mode(hbmp, BMP390_MODE_NORMAL);
     }
-    return false;
+
+    return status;
 }
 
-void BMP390_set_mode(BMP390_Handle_t *hbmp, BMP390_Mode mode)
+I2C_Status_t BMP390_set_mode(BMP390_Handle_t *hbmp, BMP390_Mode mode)
 {
     uint8_t reg_value;
+    I2C_Status_t status = I2C_Read(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_REG_PWR_CTRL, &reg_value);
 
-    if (I2C_Read(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_REG_PWR_CTRL, &reg_value) != I2C_Success) {
+    if (status != I2C_Success) {
         hbmp->error = BMP390_ERROR_SET_MODE;
-        return;
+        return status;
     }
 
     reg_value &= ~(0x33);       // Xóa bit 5, 4 (enables) và bit 1, 0 (mode cũ)
     reg_value |= (0x03 << 4);   // Bật temp_en và press_en (0x3 << 4 = 0x30)
     reg_value |= (mode & 0x03); // Set Mode
 
-    if (I2C_Write(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_REG_PWR_CTRL, reg_value) != I2C_Success) {
+    status = I2C_Write(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_REG_PWR_CTRL, reg_value);
+    if (status != I2C_Success) {
         hbmp->error = BMP390_ERROR_SET_MODE;
-        return;
     }
+    return status;
 }
 
 
@@ -137,14 +142,14 @@ void BMP390_set_mode(BMP390_Handle_t *hbmp, BMP390_Mode mode)
  *  API Polling (Blocking)
  * ========================================================== */
 
-void bmp390_temp_press_update(BMP390_Handle_t *hbmp)
+I2C_Status_t bmp390_temp_press_update(BMP390_Handle_t *hbmp)
 {
     uint8_t temp_press_data[6];
+    I2C_Status_t status = I2C_ReadMulti(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_TEMP_PRESS_DATA_ADDR, temp_press_data, 6);
 
-    // Đọc liên tiếp 6 byte thay vì đọc từng byte để tiết kiệm thời gian bus
-    if (I2C_ReadMulti(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_TEMP_PRESS_DATA_ADDR, temp_press_data, 6) != I2C_Success) {
+    if (status != I2C_Success) {
         hbmp->error = BMP390_ERROR_READ_TEMPRESS;
-        return;
+        return status;
     }
 
     hbmp->temperature_raw = ((uint32_t)temp_press_data[5] << 16) | ((uint32_t)temp_press_data[4] << 8) | (uint32_t)temp_press_data[3];
@@ -154,6 +159,8 @@ void bmp390_temp_press_update(BMP390_Handle_t *hbmp)
     BMP390_compensate_temperature(hbmp);
     BMP390_compensate_pressure(hbmp);
     BMP390_calculate_altitude(hbmp);
+
+    return I2C_Success;
 }
 
 
@@ -161,14 +168,15 @@ void bmp390_temp_press_update(BMP390_Handle_t *hbmp)
  *  API Interrupt (Non-Blocking cho Scheduler)
  * ========================================================== */
 
-void bmp390_temp_press_update_IT_Start(BMP390_Handle_t *hbmp)
+I2C_Status_t bmp390_temp_press_update_IT_Start(BMP390_Handle_t *hbmp)
 {
     if (hbmp->dev_i2c->State == I2C_STATE_IDLE) {
-        I2C_Read_IT(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_TEMP_PRESS_DATA_ADDR, hbmp->raw_buffer, 6);
+        return I2C_Read_IT(hbmp->dev_i2c, BMP390_I2C_ADDR, BMP390_TEMP_PRESS_DATA_ADDR, hbmp->raw_buffer, 6);
     }
+    return I2C_Busy;
 }
 
-bool bmp390_temp_press_update_IT_Complete(BMP390_Handle_t *hbmp)
+I2C_Status_t bmp390_temp_press_update_IT_Complete(BMP390_Handle_t *hbmp)
 {
     if (hbmp->dev_i2c->State == I2C_STATE_IDLE) {
 
@@ -181,14 +189,15 @@ bool bmp390_temp_press_update_IT_Complete(BMP390_Handle_t *hbmp)
             BMP390_compensate_pressure(hbmp);
             BMP390_calculate_altitude(hbmp);
 
-            return true;
+            return I2C_Success;
         }
         else if (hbmp->dev_i2c->Status == I2C_Error) {
             hbmp->error = BMP390_ERROR_READ_TEMPRESS;
+            return I2C_Error;
         }
     }
 
-    return false;
+    return I2C_Busy; // Nếu State != IDLE thì nghĩa là đang bận đọc
 }
 
 
