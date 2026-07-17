@@ -23,23 +23,24 @@ H3LIS331DL_Handle_t	h3lis_dev;
 TC1047_Handle_t 	Temp_HV_Channel;
 TC1047_Handle_t 	Temp_LV_Channel;
 
-uint8_t				abc = 0;
-
-
+static 	uint8_t		onboard_sens_err_cnt = 0;
+static 	uint8_t		sens_err_cnt = 0;
 
 /*-------------------------- INIT FUNTION --------------------------*/
 
 void Sensor_ADC_Init(void){
 	TC1047_Init(&Temp_LV_Channel, ADC_TEMP_HANDLE, ADC_TEMP_50V_CHANNEL,3300);
+	sens_init_status.tc1047_hv = SENS_INIT_OK;
 	TC1047_Init(&Temp_HV_Channel, ADC_TEMP_HANDLE, ADC_TEMP_300V_CHANNEL,3300);
+	sens_init_status.tc1047_lv = SENS_INIT_OK;
 }
 
 
 void  Sensor_I2C_Init(void) {
 	uint8_t init_ret = 0;
 
-	I2C_BusRecovery(ONBOARD_SENSOR_I2C_PORT, ONBOARD_SENSOR_I2C_SCL, ONBOARD_SENSOR_I2C_PORT, ONBOARD_SENSOR_I2C_SDA);
-	I2C_BusRecovery(SENSOR_I2C_PORT_SCL, SENSOR_I2C_SCL, SENSOR_I2C_PORT_SDA, SENSOR_I2C_SDA);
+	I2C_BusRecovery(&onboard_sensor_i2c,ONBOARD_SENSOR_I2C_PORT, ONBOARD_SENSOR_I2C_SCL, ONBOARD_SENSOR_I2C_PORT, ONBOARD_SENSOR_I2C_SDA);
+	I2C_BusRecovery(&sensor_i2c, SENSOR_I2C_PORT_SCL, SENSOR_I2C_SCL, SENSOR_I2C_PORT_SDA, SENSOR_I2C_SDA);
 
 	LL_mDelay(200);
 
@@ -67,112 +68,80 @@ void Sensor_ADC_task(void*){
 	Temp_LV_Channel.temp_value = TC1047_GetTemperature(&Temp_LV_Channel);
 }
 
-//void Sensor_I2C_task(void *) {
-//
-//	switch (sens_read_state)
-//	{
-//	case SENS_STATE_READ_LSM6DSOX:
-//		if (sens_init_status.lsm6d == SENS_INIT_FAIL) {
-//			sens_read_state = SENS_STATE_READ_BMP390;
-//			return;
-//		}
-//		if (LSM6DSOX_Read_Data_IT(&lsm6dsox_dev) == I2C_Success) {
-//			sens_read_state = SENS_STATE_PROCESS_LSM6DSOX;
-//		}
-//		return;
-//
-//	case SENS_STATE_PROCESS_LSM6DSOX:
-//		if (lsm6dsox_dev.dev_i2c->State != I2C_STATE_IDLE) {
-//			return;
-//		}
-//		LSM6DSOX_Process_Data_IT(&lsm6dsox_dev);
-//		sens_read_state = SENS_STATE_READ_BMP390;
-//		return;
-//
-//	case SENS_STATE_READ_BMP390:
-//		if (sens_init_status.bmp390 == SENS_INIT_FAIL) {
-//			sens_read_state = SENS_STATE_READ_H3LIS331DL;
-//			return;
-//		}
-//		bmp390_temp_press_update_IT_Start(&bmp390_dev);
-//		sens_read_state = SENS_STATE_PROCESS_BMP390;
-//		return;
-//
-//	case SENS_STATE_PROCESS_BMP390:
-//		if (bmp390_dev.dev_i2c->State != I2C_STATE_IDLE) {
-//			return;
-//		}
-//
-//		bmp390_temp_press_update_IT_Complete(&bmp390_dev);
-//		sens_read_state = SENS_STATE_READ_H3LIS331DL;
-//		return;
-//
-//	case SENS_STATE_READ_H3LIS331DL:
-//		if (sens_init_status.h3lis == SENS_INIT_FAIL) {
-//			sens_read_state = SENS_STATE_READ_LSM6DSOX;
-//			return;
-//		}
-//
-//		if (H3LIS331DL_Get_Accel_IT_Start(&h3lis_dev) == I2C_Success) {
-//			sens_read_state = SENS_STATE_PROCESS_H3LIS331DL;
-//		}
-//		return;
-//
-//	case SENS_STATE_PROCESS_H3LIS331DL:
-//		if (h3lis_dev.dev_i2c->State != I2C_STATE_IDLE) {
-//			return;
-//		}
-//
-//		H3LIS331DL_Get_Accel_IT_Complete(&h3lis_dev);
-//		sens_read_state = SENS_STATE_READ_LSM6DSOX;
-//		return;
-//
-//	default:
-//		return;
-//	}
-//}
 
-void Sensor_I2C_task(void*) {
-	if(abc == 10){
-		I2C_BusRecovery(ONBOARD_SENSOR_I2C_PORT,
-						ONBOARD_SENSOR_I2C_SCL,
-						ONBOARD_SENSOR_I2C_PORT,
-						ONBOARD_SENSOR_I2C_SDA);
-		abc = 0;
-		return;
-	}
+void Sensor_I2C_task(void* arg) {
+    uint8_t ret = I2C_Success;
 
-	uint8_t ret = 0;
-	switch (sens_read_state) {
-	case SENS_STATE_READ_LSM6DSOX:
-		if (sens_init_status.lsm6d != SENS_INIT_FAIL) {
-			ret = LSM6DSOX_Read_Data(&lsm6dsox_dev);
-			if (ret != I2C_Success) abc++;
-			else abc = 0;
-		}
+    switch (sens_read_state) {
+        case SENS_STATE_READ_LSM6DSOX:
+            if (sens_init_status.lsm6d != SENS_INIT_FAIL) {
+                ret = LSM6DSOX_Read_Data(&lsm6dsox_dev);
+                if (ret != I2C_Success) {
+                    onboard_sens_err_cnt++;
+                    if (onboard_sens_err_cnt >= 4) {
+                        sens_read_state = SENS_STATE_RECOVER_ONBOARD;
+                        break;
+                    }
+                }
+                else {
+                    onboard_sens_err_cnt = 0;
+                }
+            }
+            sens_read_state = SENS_STATE_READ_BMP390;
+            break;
 
-		sens_read_state = SENS_STATE_READ_BMP390;
-		break;
-	case SENS_STATE_READ_BMP390:
-		if (sens_init_status.bmp390 != SENS_INIT_FAIL) {
-			bmp390_temp_press_update(&bmp390_dev);
-		}
+        case SENS_STATE_READ_BMP390:
+            if (sens_init_status.bmp390 != SENS_INIT_FAIL) {
+                ret = bmp390_temp_press_update(&bmp390_dev);
+                if (ret != I2C_Success) {
+                    sens_err_cnt++;
+                    if (sens_err_cnt >= 2) {
+                        sens_read_state = SENS_STATE_RECOVER;
+                        break;
+                    }
+                }
+                else {
+                    sens_err_cnt = 0;
+                }
+            }
+            sens_read_state = SENS_STATE_READ_H3LIS331DL;
+            break;
 
-		sens_read_state = SENS_STATE_READ_H3LIS331DL;
-		break;
-	case SENS_STATE_READ_H3LIS331DL:
-		if (sens_init_status.h3lis != SENS_INIT_FAIL) {
-			ret = H3LIS331DL_Get_Accel(&h3lis_dev);
-			if (ret != I2C_Success) abc++;
-			else abc = 0;
-		}
-		sens_read_state = SENS_STATE_READ_LSM6DSOX;
-		break;
+        case SENS_STATE_READ_H3LIS331DL:
+            if (sens_init_status.h3lis != SENS_INIT_FAIL) {
+                ret = H3LIS331DL_Get_Accel(&h3lis_dev);
+                if (ret != I2C_Success) {
+                    onboard_sens_err_cnt++;
+                    if (onboard_sens_err_cnt >= 4) {
+                        sens_read_state = SENS_STATE_RECOVER_ONBOARD;
+                        break;
+                    }
+                }
+                else {
+                    onboard_sens_err_cnt = 0;
+                }
+            }
+            sens_read_state = SENS_STATE_READ_LSM6DSOX;
+            break;
+        case SENS_STATE_RECOVER_ONBOARD:
+            I2C_BusRecovery(&onboard_sensor_i2c, ONBOARD_SENSOR_I2C_PORT, ONBOARD_SENSOR_I2C_SCL, ONBOARD_SENSOR_I2C_PORT, ONBOARD_SENSOR_I2C_SDA);
+            I2C1_Init_Bridge();
+            onboard_sens_err_cnt = 0;
 
-	default:
-		sens_read_state = SENS_STATE_READ_LSM6DSOX;
-		break;
-	}
+            sens_read_state = SENS_STATE_READ_BMP390;
+            break;
+        case SENS_STATE_RECOVER:
+            I2C_BusRecovery(&sensor_i2c, SENSOR_I2C_PORT_SCL, SENSOR_I2C_SCL, SENSOR_I2C_PORT_SDA, SENSOR_I2C_SDA);
+            I2C3_Init_Bridge();
+            sens_err_cnt = 0;
+
+            sens_read_state = SENS_STATE_READ_H3LIS331DL;
+            break;
+
+        default:
+            sens_read_state = SENS_STATE_READ_LSM6DSOX;
+            break;
+    }
 }
 
 /*-------------------------- ISR FUNTION --------------------------*/

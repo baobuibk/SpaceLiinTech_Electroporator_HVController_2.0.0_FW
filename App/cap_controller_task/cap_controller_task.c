@@ -326,10 +326,8 @@ void Cap_Controller_Charge_Task(void*)
 
 }
 
-uint32_t test = 0;
 void Cap_Controller_Monitor_Task(void*)
 {
-	test++;
     Cap_Controller_Charge_Monitor_300V();
     Cap_Controller_Discharge_Monitor_300V();
 

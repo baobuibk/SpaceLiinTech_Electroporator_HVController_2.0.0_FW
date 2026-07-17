@@ -502,26 +502,41 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_SET_SENSOR_H3LIS331DL_FS:
 	{	
+		uint8_t i2c_ret = 0;
 		uint8_t fs_value = ps_FSP_RX -> Payload.set_sensor_h3lis331dl_fs.fs_value;
 
 		if (fs_value == 1) {
-			H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_100G);
+			i2c_ret = H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_100G);
 		} 
 		else if (fs_value == 2) 
 		{
-			H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_200G);
+			i2c_ret = H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_200G);
 		} 
 		else if (fs_value == 4) 
 		{
-			H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_400G);
+			i2c_ret = H3LIS331DL_Set_FS(&h3lis_dev,H3LIS331DL_FS_400G);
 		} 
+
+		ps_FSP_TX -> CMD = FSP_CMD_SET_SENSOR_H3LIS331DL_FS;
+
+		if(i2c_ret != I2C_Success) ps_FSP_TX -> Payload.set_sensor_h3lis331dl_fs.set_h3lis_fs_response = 0;
+		else ps_FSP_TX -> Payload.set_sensor_h3lis331dl_fs.set_h3lis_fs_response  = 1;
+
+		fsp_print(3);
+
 		break;
 	}
 	case FSP_CMD_GET_SENSOR_H3LIS331DL_FS:
 	{
-		H3LIS331DL_FS_t fs_value = H3LIS331DL_Get_FS(&h3lis_dev);
+		uint8_t i2c_ret = 0;
+		H3LIS331DL_FS_t fs_value = 0;
+
+		i2c_ret =H3LIS331DL_Get_FS(&h3lis_dev,&fs_value);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_H3LIS331DL_FS;
+
+		if(i2c_ret != I2C_Success) ps_FSP_TX -> Payload.get_sensor_h3lis331dl_fs.get_h3lis_fs_response = 0;
+		else ps_FSP_TX -> Payload.get_sensor_h3lis331dl_fs.get_h3lis_fs_response = 1;
 
 		if(fs_value == H3LIS331DL_FS_100G) {
 			ps_FSP_TX -> Payload.get_sensor_h3lis331dl_fs.fs_value = 1;
@@ -535,8 +550,7 @@ uint8_t FSP_Line_Process(void)
 			ps_FSP_TX -> Payload.get_sensor_h3lis331dl_fs.fs_value = 4;
 		} 
 
-
-		fsp_print(2);
+		fsp_print(3);
 		break;
 	}
 	case FSP_CMD_GET_SENSOR_HV_TEMP:
@@ -564,6 +578,7 @@ uint8_t FSP_Line_Process(void)
 	}
 	case FSP_CMD_SET_THRESHOLD_ACCEL:
 	{
+		uint8_t	i2c_ret = 0;
 		int32_t threshold_accel_mg = 	(int32_t)ps_FSP_RX->Payload.set_threshold_accel.threshold_total_mg[0]|
                               	  		((int32_t)ps_FSP_RX->Payload.set_threshold_accel.threshold_total_mg[1] << 8)|
 								  		((int32_t)ps_FSP_RX->Payload.set_threshold_accel.threshold_total_mg[2] << 16)|
@@ -571,44 +586,79 @@ uint8_t FSP_Line_Process(void)
 
 		float threshold_accel_g = (float)threshold_accel_mg / 1000; //convert to "g" 
 
-		H3LIS331DL_Set_Interrupt_Threshold(&h3lis_dev,threshold_accel_g);
+		i2c_ret = H3LIS331DL_Set_Interrupt_Threshold(&h3lis_dev,threshold_accel_g);
+
+		ps_FSP_TX -> CMD = FSP_CMD_SET_THRESHOLD_ACCEL;
+
+		if(i2c_ret != I2C_Success) ps_FSP_TX -> Payload.set_threshold_accel.set_threshold_response = 0;
+		else ps_FSP_TX -> Payload.set_threshold_accel.set_threshold_response = 1;
+
+		fsp_print(18);
 
 		break;
 	}
 	case FSP_CMD_GET_THRESHOLD_ACCEL:
 	{
+		uint8_t	i2c_ret = 0;
 		float thresholde_accel_g = 0.0f;
-		H3LIS331DL_Get_Interrupt_Threshold(&h3lis_dev,&thresholde_accel_g);
+
+		i2c_ret = H3LIS331DL_Get_Interrupt_Threshold(&h3lis_dev,&thresholde_accel_g);
 
 		int32_t threshold_accel_mg = (int32_t)(thresholde_accel_g * 1000);
 
 		ps_FSP_TX -> CMD = FSP_CMD_GET_THRESHOLD_ACCEL;
-		ps_FSP_TX -> Payload.get_threshold_accel.threshold_total_mg[0] = (uint8_t)(threshold_accel_mg & 0xFF);
-		ps_FSP_TX -> Payload.get_threshold_accel.threshold_total_mg[1] = (uint8_t)((threshold_accel_mg >> 8) & 0xFF);
-		ps_FSP_TX -> Payload.get_threshold_accel.threshold_total_mg[2] = (uint8_t)((threshold_accel_mg >> 16) & 0xFF);
-		ps_FSP_TX -> Payload.get_threshold_accel.threshold_total_mg[3] = (uint8_t)((threshold_accel_mg >> 24) & 0xFF);
 
-		fsp_print(17);
+		if (i2c_ret != I2C_Success) {
+			ps_FSP_TX->Payload.get_threshold_accel.get_threshold_response = 0;
+		}
+		else {
+			ps_FSP_TX->Payload.get_threshold_accel.get_threshold_response = 1;
+			ps_FSP_TX->Payload.get_threshold_accel.threshold_total_mg[0] = (uint8_t) (threshold_accel_mg & 0xFF);
+			ps_FSP_TX->Payload.get_threshold_accel.threshold_total_mg[1] = (uint8_t) ((threshold_accel_mg >> 8) & 0xFF);
+			ps_FSP_TX->Payload.get_threshold_accel.threshold_total_mg[2] = (uint8_t) ((threshold_accel_mg >> 16) & 0xFF);
+			ps_FSP_TX->Payload.get_threshold_accel.threshold_total_mg[3] = (uint8_t) ((threshold_accel_mg >> 24) & 0xFF);
+		}
+		fsp_print(18);
 		
 		break;
 	}
 	case FSP_CMD_SET_AUTO_ACCEL:
 	{
+		uint8_t	i2c_ret = 0;
 		bool auto_pulsing_en = ps_FSP_RX -> Payload.set_auto_accel.auto_accel_enable;
-		if (auto_pulsing_en == true){
-			AP_Mode = AP_MODE_ON;
-		}
-		else if(auto_pulsing_en == false){
-			AP_Mode = AP_MODE_OFF;
-		}
-		H3LIS331DL_Enable_INT1_All(&h3lis_dev,auto_pulsing_en);
+
+		if (auto_pulsing_en == true) AP_Mode = AP_MODE_ON;
+		else if(auto_pulsing_en == false) AP_Mode = AP_MODE_OFF;
+
+		i2c_ret = H3LIS331DL_Enable_INT1_All(&h3lis_dev,auto_pulsing_en);
+
+		ps_FSP_TX -> CMD = FSP_CMD_SET_AUTO_ACCEL;
+		if(i2c_ret != I2C_Success)
+			ps_FSP_TX -> Payload.set_auto_accel.set_auto_accel_response = 0;
+		else
+			ps_FSP_TX -> Payload.set_auto_accel.set_auto_accel_response = 1;
+
+		fsp_print(3);
+
+		break;
+	}
+	case FSP_CMD_GET_SENSOR_HVC_INIT_STATE:
+	{
+		ps_FSP_TX -> CMD = FSP_CMD_GET_SENSOR_HVC_INIT_STATE;
+		ps_FSP_TX -> Payload.get_sensor_hvc_init_state.init_state_bmp390 	= sens_init_status.bmp390;
+		ps_FSP_TX -> Payload.get_sensor_hvc_init_state.init_state_lsm6d 	= sens_init_status.lsm6d;
+		ps_FSP_TX -> Payload.get_sensor_hvc_init_state.init_state_h3lis 	= sens_init_status.h3lis;
+		ps_FSP_TX -> Payload.get_sensor_hvc_init_state.init_state_tc1047_hv = sens_init_status.tc1047_hv;
+		ps_FSP_TX -> Payload.get_sensor_hvc_init_state.init_state_tc1047_lv	= sens_init_status.tc1047_lv;
+		ps_FSP_TX -> Payload.get_sensor_hvc_init_state.init_state_ads1115 	= sens_init_status.ads1115;
+
+		fsp_print(7);
 		break;
 	}
 	default:
-		return 0;
+		break;
 	}
-
-	return 1;
+	return;
 }
 
 /*---------------------------------------------------- STATIC FUNCTION ---------------------------------------------------*/

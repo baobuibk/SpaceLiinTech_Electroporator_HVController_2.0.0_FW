@@ -76,7 +76,7 @@ I2C_Status_t H3LIS331DL_Get_Accel_IT_Start(H3LIS331DL_Handle_t *hh3lis);
 bool H3LIS331DL_Get_Accel_IT_Complete(H3LIS331DL_Handle_t *hh3lis);
 
 I2C_Status_t H3LIS331DL_Set_FS(H3LIS331DL_Handle_t *hh3lis, H3LIS331DL_FS_t fs);
-H3LIS331DL_FS_t H3LIS331DL_Get_FS(H3LIS331DL_Handle_t *hh3lis);
+I2C_Status_t H3LIS331DL_Get_FS(H3LIS331DL_Handle_t *hh3lis, H3LIS331DL_FS_t *fs);
 
 I2C_Status_t H3LIS331DL_Set_Interrupt_Threshold(H3LIS331DL_Handle_t *hh3lis, float threshold_g);
 I2C_Status_t H3LIS331DL_Get_Interrupt_Threshold(H3LIS331DL_Handle_t *hh3lis, float *threshold_g);

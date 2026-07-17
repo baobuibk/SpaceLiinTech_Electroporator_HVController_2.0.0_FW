@@ -321,7 +321,7 @@ I2C_Status_t I2C_IsDeviceReady(I2C_Handle_t *hi2c, uint8_t addr, uint32_t retrie
     return I2C_Error; // Khong thiet bi nao tra loi sau tat ca cac lan thu
 }
 
-void I2C_BusRecovery(GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin, GPIO_TypeDef* SDA_Port, uint32_t SDA_Pin)
+void I2C_BusRecovery(I2C_Handle_t *hi2c,GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin, GPIO_TypeDef* SDA_Port, uint32_t SDA_Pin)
 {
     LL_GPIO_SetPinMode(SCL_Port, SCL_Pin, LL_GPIO_MODE_OUTPUT);
     LL_GPIO_SetPinOutputType(SCL_Port, SCL_Pin, LL_GPIO_OUTPUT_OPENDRAIN);
@@ -336,16 +336,15 @@ void I2C_BusRecovery(GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin, GPIO_TypeDef* SDA
     I2C_Delay_us();
 
 //    if (LL_GPIO_IsInputPinSet(SDA_Port, SDA_Pin) == 0) {
-        for (uint8_t i = 0; i < 9; i++) {
-            LL_GPIO_ResetOutputPin(SCL_Port, SCL_Pin);
-            I2C_Delay_us();
-
-            LL_GPIO_SetOutputPin(SCL_Port, SCL_Pin);
-            I2C_Delay_us();
-            if (LL_GPIO_IsInputPinSet(SDA_Port, SDA_Pin) != 0) {
-                break;
-            }
-        }
+	for (uint8_t i = 0; i < 9; i++) {
+		LL_GPIO_ResetOutputPin(SCL_Port, SCL_Pin);
+		I2C_Delay_us();
+		LL_GPIO_SetOutputPin(SCL_Port, SCL_Pin);
+		I2C_Delay_us();
+		if (LL_GPIO_IsInputPinSet(SDA_Port, SDA_Pin) != 0) {
+			break;
+		}
+	}
 //    }
 
     LL_GPIO_ResetOutputPin(SCL_Port, SCL_Pin);
@@ -361,6 +360,12 @@ void I2C_BusRecovery(GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin, GPIO_TypeDef* SDA
     LL_GPIO_SetPinMode(SCL_Port, SCL_Pin, LL_GPIO_MODE_ALTERNATE);
     LL_GPIO_SetPinMode(SDA_Port, SDA_Pin, LL_GPIO_MODE_ALTERNATE);
 
+    hi2c->Instance->CR1 |= I2C_CR1_SWRST;
+    I2C_Delay_us();
+    hi2c->Instance->CR1 &= ~I2C_CR1_SWRST;
+
+    hi2c->Status      = I2C_Success;
+    hi2c->ErrorCode   = I2C_ERROR_NONE;
 }
 
 /* ============================================================

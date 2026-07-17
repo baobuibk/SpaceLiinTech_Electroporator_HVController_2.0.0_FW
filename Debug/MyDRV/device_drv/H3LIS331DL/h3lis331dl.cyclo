@@ -3,10 +3,10 @@
 ../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:26:14:H3LIS331DL_Init	2
 ../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:50:14:H3LIS331DL_Read_ID	1
 ../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:56:14:H3LIS331DL_Set_FS	5
-../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:76:17:H3LIS331DL_Get_FS	2
-../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:91:14:H3LIS331DL_Get_Accel	3
-../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:123:14:H3LIS331DL_Get_Accel_IT_Start	2
-../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:133:6:H3LIS331DL_Get_Accel_IT_Complete	4
-../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:163:14:H3LIS331DL_Set_Interrupt_Threshold	5
-../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:180:14:H3LIS331DL_Get_Interrupt_Threshold	5
-../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:202:14:H3LIS331DL_Enable_INT1_All	2
+../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:76:14:H3LIS331DL_Get_FS	2
+../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:93:14:H3LIS331DL_Get_Accel	3
+../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:125:14:H3LIS331DL_Get_Accel_IT_Start	2
+../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:135:6:H3LIS331DL_Get_Accel_IT_Complete	4
+../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:165:14:H3LIS331DL_Set_Interrupt_Threshold	5
+../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:182:14:H3LIS331DL_Get_Interrupt_Threshold	5
+../MyDRV/device_drv/H3LIS331DL/h3lis331dl.c:204:14:H3LIS331DL_Enable_INT1_All	2

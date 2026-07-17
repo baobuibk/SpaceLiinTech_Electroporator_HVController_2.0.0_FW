@@ -14,6 +14,8 @@
 #include "bmp390.h"
 #include "TC1047.h"
 
+#include "main.h"
+
 #include "board.h"
 
 typedef enum {
@@ -28,7 +30,8 @@ typedef enum {
 	SENS_STATE_PROCESS_H3LIS331DL,
 	SENS_STATE_READ_BMP390,
 	SENS_STATE_PROCESS_BMP390,
-	SENS_STATE_REC_BUS,
+	SENS_STATE_RECOVER_ONBOARD,
+	SENS_STATE_RECOVER,
 }Sens_Read_State_t;
 
 
@@ -36,8 +39,12 @@ typedef struct Sens_List_Status {
 	Sens_Init_State_t 	lsm6d;
 	Sens_Init_State_t 	h3lis;
 	Sens_Init_State_t	bmp390;
+	Sens_Init_State_t	tc1047_hv;
+	Sens_Init_State_t	tc1047_lv;
+	Sens_Init_State_t	ads1115;
 } Sens_List_Status_t;
 
+extern Sens_List_Status_t 	sens_init_status;
 
 extern LSM6DSOX_Handle_t 	lsm6dsox_dev;
 extern BMP390_Handle_t		bmp390_dev;

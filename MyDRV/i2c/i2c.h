@@ -56,7 +56,7 @@ I2C_Status_t I2C_Read(I2C_Handle_t *hi2c, uint8_t addr, uint8_t reg, uint8_t *pD
 I2C_Status_t I2C_ReadMulti(I2C_Handle_t *hi2c, uint8_t addr, uint8_t reg, uint8_t *pData, uint16_t size);
 I2C_Status_t I2C_WriteMulti(I2C_Handle_t *hi2c, uint8_t addr, uint8_t reg, uint8_t *pData, uint16_t size);
 I2C_Status_t I2C_IsDeviceReady(I2C_Handle_t *hi2c, uint8_t addr, uint32_t retries);
-void I2C_BusRecovery(GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin, GPIO_TypeDef* SDA_Port, uint32_t SDA_Pin);
+void I2C_BusRecovery(I2C_Handle_t *hi2c,GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin, GPIO_TypeDef* SDA_Port, uint32_t SDA_Pin);
 
 I2C_Status_t I2C_Write_IT(I2C_Handle_t *hi2c, uint8_t addr, uint8_t reg, uint8_t *pData, uint16_t size);
 I2C_Status_t I2C_Read_IT(I2C_Handle_t *hi2c, uint8_t addr, uint8_t reg, uint8_t *pData, uint16_t size);

@@ -73,14 +73,16 @@ I2C_Status_t H3LIS331DL_Set_FS(H3LIS331DL_Handle_t *hh3lis, H3LIS331DL_FS_t fs)
     return hh3lis->status;
 }
 
-H3LIS331DL_FS_t H3LIS331DL_Get_FS(H3LIS331DL_Handle_t *hh3lis)
+I2C_Status_t H3LIS331DL_Get_FS(H3LIS331DL_Handle_t *hh3lis, H3LIS331DL_FS_t *fs)
 {
-    uint8_t ctrl_reg4 = 0;
-    H3LIS331DL_Read(hh3lis, H3LIS331DL_CTRL_REG4, &ctrl_reg4, 1);
+    uint8_t reg_val = 0;
+    H3LIS331DL_Read(hh3lis, H3LIS331DL_CTRL_REG4, &reg_val, 1);
+
     if (hh3lis->status == I2C_Success) {
-        return (H3LIS331DL_FS_t)(ctrl_reg4 & 0x30);
+        *fs = (H3LIS331DL_FS_t)(reg_val & 0x30);
     }
-    return H3LIS331DL_FS_400G; // Default fallback
+
+    return hh3lis->status;
 }
 
 

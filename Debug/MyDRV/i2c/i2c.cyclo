@@ -38,7 +38,7 @@
 ../MyDRV/i2c/i2c.c:236:14:I2C_WriteMulti	16
 ../MyDRV/i2c/i2c.c:286:14:I2C_IsDeviceReady	13
 ../MyDRV/i2c/i2c.c:324:6:I2C_BusRecovery	3
-../MyDRV/i2c/i2c.c:370:14:I2C_Write_IT	5
-../MyDRV/i2c/i2c.c:395:14:I2C_Read_IT	5
-../MyDRV/i2c/i2c.c:419:6:I2C_EV_IRQHandler	32
-../MyDRV/i2c/i2c.c:554:6:I2C_ER_IRQHandler	5
+../MyDRV/i2c/i2c.c:375:14:I2C_Write_IT	5
+../MyDRV/i2c/i2c.c:400:14:I2C_Read_IT	5
+../MyDRV/i2c/i2c.c:424:6:I2C_EV_IRQHandler	32
+../MyDRV/i2c/i2c.c:559:6:I2C_ER_IRQHandler	5
