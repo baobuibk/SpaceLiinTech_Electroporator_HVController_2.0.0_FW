@@ -37,6 +37,8 @@ typedef enum _FSP_CMD_typedef_
 
 	FSP_CMD_MEASURE_VOLT,
 
+	FSP_CMD_GET_SENSOR_HVC_INIT_STATE,
+
 	FSP_CMD_GET_SENSOR_GYRO,
 	FSP_CMD_GET_SENSOR_ACCEL,
 	FSP_CMD_GET_SENSOR_LSM6DSOX,
@@ -180,7 +182,7 @@ typedef struct _GET_SENSOR_LSM6DSOX_
 	uint8_t Accel_x[4];
 	uint8_t Accel_y[4];
 	uint8_t Accel_z[4];
-
+	uint8_t	response;
 }GET_SENSOR_LMS6DSOX;
 
 typedef struct _GET_SENSOR_BMP390_
@@ -202,12 +204,14 @@ typedef struct _GET_SENSOR_H3LIS331DL_
 typedef struct _GET_SENSOR_H3LIS331DL_FS_
 {
 	uint8_t		fs_value;
+	uint8_t		get_h3lis_fs_response;
 
 }GET_SENSOR_H3LIS331DL_FS;
 
 typedef struct _SET_SENSOR_H3LIS331DL_FS_
 {
 	uint8_t		fs_value;
+	uint8_t		set_h3lis_fs_response;
 
 }SET_SENSOR_H3LIS331DL_FS;
 
@@ -235,6 +239,7 @@ typedef struct _AUTO_ACCEL_TRIGGER_
 typedef struct _SET_AUTO_ACCEL_
 {
 	uint8_t		auto_accel_enable;
+	uint8_t		set_auto_accel_response;
 
 }SET_AUTO_ACCEL;
 
@@ -244,11 +249,13 @@ typedef struct _SET_THRESHOLD_ACCEL_
 	uint8_t		threshold_y_mg[4]; // Threshold for Y-axis in milli-g
 	uint8_t		threshold_z_mg[4]; // Threshold for Z-axis in milli-g
 	uint8_t		threshold_total_mg[4];    // Threshold in g
+	uint8_t		set_threshold_response;
 
 }SET_THRESHOLD_ACCEL;
 
 typedef struct _GET_THRESHOLD_ACCEL_
 {
+	uint8_t		get_threshold_response;
 	uint8_t		threshold_x_mg[4]; // Threshold for X-axis in milli-g
 	uint8_t		threshold_y_mg[4]; // Threshold for Y-axis in milli-g
 	uint8_t		threshold_z_mg[4]; // Threshold for Z-axis in milli-g
@@ -256,6 +263,17 @@ typedef struct _GET_THRESHOLD_ACCEL_
 
 }GET_THRESHOLD_ACCEL;
 
+
+typedef struct _GET_SENSOR_HVC_INIT_STATE_
+{
+	uint8_t		init_state_bmp390;
+	uint8_t		init_state_lsm6d;
+	uint8_t		init_state_h3lis;
+	uint8_t		init_state_tc1047_hv;
+	uint8_t		init_state_tc1047_lv;
+	uint8_t		init_state_ads1115;
+
+}GET_SENSOR_HVC_INIT_STATE;
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
@@ -270,7 +288,6 @@ typedef union _FSP_RESPONSE_
 	bool	response;
 
 } FSP_RESPONSE;
-
 
 
 typedef union _FSP_Payload_Frame_typedef_
@@ -291,6 +308,8 @@ typedef union _FSP_Payload_Frame_typedef_
 
 	MEASURE_VOLT 			measure_volt;
 
+	GET_SENSOR_HVC_INIT_STATE	get_sensor_hvc_init_state;
+
 	SET_THRESHOLD_ACCEL		set_threshold_accel;
 	GET_THRESHOLD_ACCEL		get_threshold_accel;
 	SET_AUTO_ACCEL			set_auto_accel;
@@ -308,7 +327,6 @@ typedef union _FSP_Payload_Frame_typedef_
 	FSP_HANDSAKE			handshake;
 	FSP_RESPONSE			fsp_response;
 
-
 } FSP_Payload_Frame_typedef;
 
 typedef struct _FSP_Payload_typedef_
@@ -317,7 +335,6 @@ typedef struct _FSP_Payload_typedef_
 	FSP_Payload_Frame_typedef 	Payload;
 
 } FSP_Payload;
-
 
 uint8_t FSP_Line_Process(void);
 

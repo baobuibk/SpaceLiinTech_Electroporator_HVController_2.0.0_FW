@@ -21,6 +21,7 @@
 
 // USER DRIVER //
 #include <scheduler/scheduler.h>
+#include "crc.h"
 #include "ring_buffer.h"
 #include "uart_driver.h"
 #include <cli/CLI_Src/embedded_cli.h>
@@ -28,16 +29,18 @@
 #include "cli_command.h"
 #include "fsp.h"
 #include "fsp_frame.h"
-//#include "spi.h"
+#include "i2c.h"
 
 
 // USER DIVICE //
 //#include "MB85RS2MT.h"
 #include "h3lis331dl.h"
 #include "lsm6dsox.h"
+#include "bmp390.h"
 
 // INCLUDE TASK //
 #include "debug_cmd_task.h"
+//#include "db_cap_controller.h"
 #include "cap_controller_task.h"
 #include "fsp_line_task.h"
 #include "sensor_task.h"

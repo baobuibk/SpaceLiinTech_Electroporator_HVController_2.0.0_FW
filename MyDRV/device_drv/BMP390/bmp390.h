@@ -3,19 +3,21 @@
  *
  * Created on: Dec 16, 2024
  * Author: SANG HUYNH
- * Updated: Fixed initialization logic and double getters
+ * Updated: Return I2C_Status_t for easier debugging
  */
 
 #ifndef DEVICES_BMP390_BMP390_H_
 #define DEVICES_BMP390_BMP390_H_
 
-#include "main.h"
 #include "i2c.h"
 #include <stdbool.h>
 
-// Standard Sea Level Pressure in Pascals (Pa)
-//#define BMP390_SEA_LEVEL_PRESSURE    101325.0f
 #define BMP390_SEA_LEVEL_PRESSURE    101000.0f
+#define BMP390_I2C_ADDR              0x77
+
+#define BMP390_CALIB_DATA_ADDR       0x31
+#define BMP390_TEMP_PRESS_DATA_ADDR  0x04
+#define BMP390_REG_PWR_CTRL          0x1B
 
 // Calibration data structure for BMP390
 typedef struct {
@@ -66,36 +68,37 @@ typedef enum {
     BMP390_ERROR_READ_TEMPRESS  = 4
 } BMP390_ERROR;
 
-typedef struct _BMP390_Data_
-{
-    int32_t                     temperature_raw;
-    float                       temperature;            // Compensated Temperature (Celsius)
-    int32_t                     pressure_raw;
-    float                       pressure;               // Compensated Pressure (Pa)
-    float                       altitude;               // Calculated Altitude (m)
-    uint8_t                     chipID;
+typedef struct {
+    I2C_Handle_t                *dev_i2c;       // Handle I2C giao tiếp
     BMP390_Raw_Calib_Data_t     NVM;
     BMP390_Calib_Data_t         PAR;
-    BMP390_ERROR                BMP390_ERR;
-} BMP390_Data;
 
-typedef struct _BMP390_Value_
-{
-    float                       temperature;
-    float                       pressure;
-    float                       altitude;
+    int32_t                     temperature_raw;
+    int32_t                     pressure_raw;
 
-}BMP390_Value;
+    float                       temperature;    // Compensated Temperature (Celsius)
+    float                       pressure;       // Compensated Pressure (Pa)
+    float                       altitude;       // Calculated Altitude (m)
+
+    BMP390_ERROR                error;
+    uint8_t                     raw_buffer[6];  // Buffer để nhận dữ liệu ngắt
+} BMP390_Handle_t;
 
 
+/* ---------------- API Khởi tạo & Cấu hình ---------------- */
+I2C_Status_t BMP390_init(BMP390_Handle_t *hbmp, I2C_Handle_t *hi2c);
+I2C_Status_t BMP390_set_mode(BMP390_Handle_t *hbmp, BMP390_Mode mode);
 
-bool BMP390_init(void);
-void BMP390_set_mode(BMP390_Mode mode);
-void bmp390_temp_press_update(BMP390_Value* dev);
+/* ---------------- API Polling (Blocking) ---------------- */
+I2C_Status_t bmp390_temp_press_update(BMP390_Handle_t *hbmp);
 
-// Trả về số thực chuẩn, không cần scale
-double bmp390_get_temperature(void);
-double bmp390_get_press(void);
-double bmp390_get_altitude(void);
+/* ---------------- API Interrupt (Non-Blocking) ---------------- */
+I2C_Status_t bmp390_temp_press_update_IT_Start(BMP390_Handle_t *hbmp);
+I2C_Status_t bmp390_temp_press_update_IT_Complete(BMP390_Handle_t *hbmp);
+
+/* ---------------- API Getters ---------------- */
+double bmp390_get_temperature(BMP390_Handle_t *hbmp);
+double bmp390_get_press(BMP390_Handle_t *hbmp);
+double bmp390_get_altitude(BMP390_Handle_t *hbmp);
 
 #endif /* DEVICES_BMP390_BMP390_H_ */
