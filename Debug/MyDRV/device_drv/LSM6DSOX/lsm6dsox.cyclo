@@ -2,6 +2,6 @@
 ../MyDRV/device_drv/LSM6DSOX/lsm6dsox.c:16:13:LSM6DSOX_ReadMulti	1
 ../MyDRV/device_drv/LSM6DSOX/lsm6dsox.c:21:14:LSM6DSOX_Init	2
 ../MyDRV/device_drv/LSM6DSOX/lsm6dsox.c:38:14:LSM6DSOX_Read_ID	1
-../MyDRV/device_drv/LSM6DSOX/lsm6dsox.c:43:14:LSM6DSOX_Read_Data	2
+../MyDRV/device_drv/LSM6DSOX/lsm6dsox.c:43:14:LSM6DSOX_Read_Data	1
 ../MyDRV/device_drv/LSM6DSOX/lsm6dsox.c:72:14:LSM6DSOX_Read_Data_IT	2
 ../MyDRV/device_drv/LSM6DSOX/lsm6dsox.c:82:6:LSM6DSOX_Process_Data_IT	3

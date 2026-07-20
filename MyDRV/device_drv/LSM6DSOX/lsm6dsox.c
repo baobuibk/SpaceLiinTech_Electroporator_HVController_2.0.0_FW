@@ -42,9 +42,9 @@ I2C_Status_t LSM6DSOX_Read_ID(LSM6DSOX_Handle_t *hlsm, uint8_t *ID) {
 
 I2C_Status_t LSM6DSOX_Read_Data(LSM6DSOX_Handle_t *hlsm) {
 
-    if (hlsm->status == I2C_Error) {
-        LSM6DSOX_Init(hlsm, hlsm->dev_i2c);
-    }
+//    if (hlsm->status == I2C_Error) {
+//        LSM6DSOX_Init(hlsm, hlsm->dev_i2c);
+//    }
 
     LSM6DSOX_ReadMulti(hlsm, LSM6DSOX_OUTX_L_G, hlsm->RxData, 12);
 

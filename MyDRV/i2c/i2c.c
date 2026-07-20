@@ -323,6 +323,9 @@ I2C_Status_t I2C_IsDeviceReady(I2C_Handle_t *hi2c, uint8_t addr, uint32_t retrie
 
 void I2C_BusRecovery(I2C_Handle_t *hi2c,GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin, GPIO_TypeDef* SDA_Port, uint32_t SDA_Pin)
 {
+	LL_I2C_Disable(hi2c->Instance);
+	LL_I2C_DeInit(hi2c->Instance);
+
     LL_GPIO_SetPinMode(SCL_Port, SCL_Pin, LL_GPIO_MODE_OUTPUT);
     LL_GPIO_SetPinOutputType(SCL_Port, SCL_Pin, LL_GPIO_OUTPUT_OPENDRAIN);
     LL_GPIO_SetPinPull(SCL_Port, SCL_Pin, LL_GPIO_PULL_UP);
@@ -335,7 +338,6 @@ void I2C_BusRecovery(I2C_Handle_t *hi2c,GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin
     LL_GPIO_SetOutputPin(SDA_Port, SDA_Pin);
     I2C_Delay_us();
 
-//    if (LL_GPIO_IsInputPinSet(SDA_Port, SDA_Pin) == 0) {
 	for (uint8_t i = 0; i < 9; i++) {
 		LL_GPIO_ResetOutputPin(SCL_Port, SCL_Pin);
 		I2C_Delay_us();
@@ -345,7 +347,6 @@ void I2C_BusRecovery(I2C_Handle_t *hi2c,GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin
 			break;
 		}
 	}
-//    }
 
     LL_GPIO_ResetOutputPin(SCL_Port, SCL_Pin);
     LL_GPIO_ResetOutputPin(SDA_Port, SDA_Pin);
@@ -360,12 +361,13 @@ void I2C_BusRecovery(I2C_Handle_t *hi2c,GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin
     LL_GPIO_SetPinMode(SCL_Port, SCL_Pin, LL_GPIO_MODE_ALTERNATE);
     LL_GPIO_SetPinMode(SDA_Port, SDA_Pin, LL_GPIO_MODE_ALTERNATE);
 
-    hi2c->Instance->CR1 |= I2C_CR1_SWRST;
-    I2C_Delay_us();
-    hi2c->Instance->CR1 &= ~I2C_CR1_SWRST;
+//    hi2c->Instance->CR1 |= I2C_CR1_SWRST;
+//    I2C_Delay_us();
+//    hi2c->Instance->CR1 &= ~I2C_CR1_SWRST;
 
     hi2c->Status      = I2C_Success;
     hi2c->ErrorCode   = I2C_ERROR_NONE;
+
 }
 
 /* ============================================================
