@@ -92,9 +92,9 @@ I2C_Status_t H3LIS331DL_Get_FS(H3LIS331DL_Handle_t *hh3lis, H3LIS331DL_FS_t *fs)
 
 I2C_Status_t H3LIS331DL_Get_Accel(H3LIS331DL_Handle_t *hh3lis)
 {
-    if (hh3lis->status == I2C_Error) {
-        H3LIS331DL_Init(hh3lis, hh3lis->dev_i2c);
-    }
+//    if (hh3lis->status == I2C_Error) {
+//        H3LIS331DL_Init(hh3lis, hh3lis->dev_i2c);
+//    }
 
     H3LIS331DL_Read(hh3lis, H3LIS331DL_OUT_X_L_MULTI, hh3lis->accel_raw, 6);
 
