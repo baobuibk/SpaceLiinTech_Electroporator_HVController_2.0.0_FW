@@ -19,6 +19,7 @@ RM := rm -rf
 -include MyDRV/device_drv/LSM6DSOX/subdir.mk
 -include MyDRV/device_drv/H3LIS331DL/subdir.mk
 -include MyDRV/device_drv/BMP390/subdir.mk
+-include MyDRV/device_drv/ADS1115/subdir.mk
 -include MyDRV/cli/CLI_Src/subdir.mk
 -include MyDRV/cli/CLI_Setup/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk

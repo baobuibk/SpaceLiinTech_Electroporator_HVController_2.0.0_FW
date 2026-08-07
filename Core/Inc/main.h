@@ -71,6 +71,7 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN EFP */
 void I2C1_Init_Bridge(void);
+void I2C2_Init_Bridge(void);
 void I2C3_Init_Bridge(void);
 
 /* USER CODE END EFP */

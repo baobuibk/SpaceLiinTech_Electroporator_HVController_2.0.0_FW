@@ -57,6 +57,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths.1950218524" name="Include paths (-I)" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.option.includepaths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/MyDRV/scheduler}&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/MyDRV/device_drv/ADS1115}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/App/database}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/App}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/App/auto_pulsing_task}&quot;"/>
@@ -111,9 +112,9 @@
 					</folderInfo>
 					<fileInfo id="com.st.stm32cube.ide.mcu.gnu.managedbuild.config.exe.debug.1560358107.2064522860" name="cap_calib_task.h" rcbsApplicability="disable" resourcePath="App/cap_controller_task/cap_calib_task.h" toolsToInvoke=""/>
 					<sourceEntries>
-						<entry excluding="spi|device_drv/MB85RS2MT|device_drv/ADS1115|spi.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="MyDRV"/>
 						<entry excluding="cap_controller_task/cap_calib_task.c|cap_controller_task/cap_calib_task.h" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="App"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Core"/>
+						<entry excluding="spi|device_drv/MB85RS2MT|spi.c" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="MyDRV"/>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Drivers"/>
 					</sourceEntries>
 				</configuration>

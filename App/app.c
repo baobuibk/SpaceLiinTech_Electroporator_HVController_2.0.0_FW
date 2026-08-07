@@ -22,18 +22,17 @@ tSchedulerTask 	g_psSchedulerTable[SCHEDULER_TASK_COUNT] =
                         {&Debug_CMD_Line_Task,			(void *) 0,	50,		0, 	true},
 						{&Sensor_I2C_task,				(void *) 0,	1000,	0, 	true},
 						{&Sensor_ADC_task,				(void *) 0,	10000,	0, 	true},
-                        {&Status_Led,					(void *) 0,	10000,	0,	false},
+                        {&Sensor_Charger_I2C_Task,		(void *) 0,	10000,	0,	true},
                 };
 
 void App_Main(void)
 {
     CMD_Line_Task_Init();
     FSP_Line_Task_Init();
-
     Cap_Controller_Init();
     Sensor_ADC_Init();
-
     Sensor_I2C_Init();
+    Sensor_Charger_I2C_Init();
 
     SchedulerInit(10000);
 
