@@ -1,212 +1,114 @@
-
-
-#include <stdint.h>
-#include <stdbool.h>
-#include <string.h>
+/*
+ * ADS1115.c
+ *
+ *  Created on: May 8, 2026
+ *      Author: PV
+ */
 
 #include "ads1115.h"
-#include "board.h"
-#include "i2c.h"
 
 
-static float ADS1115_Cof_Cal(uint8_t ADS1115_pga){
 
-	switch (ADS1115_pga) {
+static float ADS1115_GetVoltageMultiplier(ADS1115_PGA_t pga);
 
-	case ADS1115_PGA_TWOTHIRDS:
-		return 0.1875;
 
-	case ADS1115_PGA_ONE:
-		return 0.125;
 
-	case ADS1115_PGA_TWO:
-		return 0.0625;
+I2C_Status_t ADS1115_Init(ADS1115_Handle_t *hads, I2C_Handle_t *hi2c) {
+    if (hads == NULL || hi2c == NULL) return I2C_Error;
 
-	case ADS1115_PGA_FOUR:
-		return 0.03125;
+    hads->dev_i2c = hi2c;
+    hads->dev_address = ADS1115_ADDRESS_GND;
+    hads->dev_pga = ADS1115_PGA_2_048V;
 
-	case ADS1115_PGA_EIGHT:
-		return 0.015625;
-
-	case ADS1115_PGA_SIXTEEN:
-		return 0.0078125;
-
-	}
+    return I2C_IsDeviceReady(hads->dev_i2c, hads->dev_address, 3);
 }
 
-static void ADS1115_Val_Cal(ADS_1115_handle* p_handle){
+I2C_Status_t ADS1115_SetConfig(ADS1115_Handle_t *hads, ADS1115_MUX_t mux, ADS1115_PGA_t pga, ADS1115_MODE_t mode, ADS1115_DR_t dr) {
+    if (hads == NULL) return I2C_Error;
 
-    p_handle->data.raw_value = (int16_t)(
-        ((uint16_t)p_handle->rx_buf[0] << 8) |
-        ((uint16_t)p_handle->rx_buf[1])
-    );
+    hads->dev_pga = pga;
+    hads->dev_channel = mux;
+    hads->dev_mode = mode;
+    hads->dev_dr = dr;
 
-    float coef = ADS1115_Cof_Cal(p_handle -> config.pga);
-    p_handle->data.voltage_mV = ((int32_t)p_handle->data.raw_value * coef)*1000;
+    uint16_t config = mux | pga | mode | dr | 0x0003; // 0x0003 cho COMP_QUE=11 (Disable)[cite: 3]
+
+    uint8_t data[2];
+    data[0] = (uint8_t)(config >> 8);
+    data[1] = (uint8_t)(config & 0xFF);
+
+    return I2C_WriteMulti(hads->dev_i2c, hads->dev_address, ADS1115_REG_CONFIG, data, 2);
 }
 
-void ADS1115_Init_Handle(ADS_1115_handle* p_handle)
-{
-    if (p_handle == NULL)
-    {
-        return;
+I2C_Status_t ADS1115_StartSingleConversion(ADS1115_Handle_t *hads) {
+    if (hads == NULL) return I2C_Error;
+
+    uint8_t data[2];
+
+    if (I2C_ReadMulti(hads->dev_i2c, hads->dev_address, ADS1115_REG_CONFIG, data, 2) != I2C_Success) {
+        return I2C_Error;
     }
 
-    p_handle->state        = ADS1115_STATE_RESET;
-    p_handle->busy_count   = 0;
-    p_handle->write_flag   = I2C_IS_RUNNING;
-    p_handle->read_flag    = I2C_IS_RUNNING;
-    p_handle->result       = I2C_IS_RUNNING;
+    data[0] |= 0x80;
 
-    memset(p_handle->tx_buf,  0, sizeof(p_handle->tx_buf));
-    memset(p_handle->rx_buf,  0, sizeof(p_handle->rx_buf));
-    memset(&p_handle->data,   0, sizeof(p_handle->data));
-
+    return I2C_WriteMulti(hads->dev_i2c, hads->dev_address, ADS1115_REG_CONFIG, data, 2);
 }
 
+I2C_Status_t ADS1115_IsReady(ADS1115_Handle_t *hads, bool *is_ready) {
+    if (hads == NULL || is_ready == NULL) return I2C_Error;
 
-
-i2c_result_t ADS1115_Read_Value(i2c_stdio_typedef* p_i2c, ADS_1115_handle* p_handle){
-
-	i2c_result_t return_value;
-
-    if ((p_i2c == NULL) || (p_handle == NULL))
-    {
-        return I2C_FAIL;
+    uint8_t data[2];
+    if (I2C_ReadMulti(hads->dev_i2c, hads->dev_address, ADS1115_REG_CONFIG, data, 2) != I2C_Success) {
+        return I2C_Error;
     }
 
-    if (LL_I2C_IsActiveFlag_BUSY(p_i2c->handle) == 1)
-    {
-        p_handle->busy_count++;
-
-        if (p_handle->busy_count < ADS1115_BUS_BUSY_LIMIT)
-        {
-            return I2C_IS_RUNNING;
-        }
-
-
-        p_handle->busy_count = 0;
-        p_handle->state      = ADS1115_STATE_RESET;
-        p_handle->result     = I2C_ERROR_BUS_BUSY;
-        return I2C_ERROR_BUS_BUSY;
+    if ((data[0] & 0x80) != 0) {
+        *is_ready = true;
+    } else {
+        *is_ready = false;
     }
 
-    p_handle->busy_count = 0;
-
-
-    switch (p_handle->state)
-    {
-    case ADS1115_STATE_RESET:
-    {
-        memset(p_handle->rx_buf, 0, sizeof(p_handle->rx_buf));
-
-        p_handle -> tx_buf[0] = 0;
-        p_handle -> tx_buf[0] |= ADS1115_OS|p_handle->config.input_channel | p_handle->config.pga | ADS1115_MODE_SINGLE;
-
-        p_handle -> tx_buf[1] = 0;
-        p_handle -> tx_buf[1] |= p_handle->config.data_rate;
-
-        p_handle->state = ADS1115_STATE_TRIGGER_CONV;
-
-        return I2C_IS_RUNNING;
-    }
-
-    case ADS1115_STATE_TRIGGER_CONV:
-    {
-    	I2C_Mem_Write_IT(p_i2c, ADS1115_ADDR, ADS1115_CONFIG_REG,p_handle->tx_buf, 2 , &p_handle->write_flag);
-
-        p_handle->state = ADS1115_STATE_WAIT_WRITE_DONE;
-
-        return I2C_IS_RUNNING;
-    }
-
-    case ADS1115_STATE_WAIT_WRITE_DONE:
-    {
-         return_value = Is_I2C_Write_Complete(&p_handle->write_flag);
-
-         if (return_value != I2C_OK)
-         {
-            break;
-         }
-
-         I2C_Mem_Read_IT(p_i2c, ADS1115_ADDR, ADS1115_CONFIG_REG, p_handle -> rx_buf, 2, &p_handle->read_flag);
-         p_handle->state = ADS1115_STATE_POLL_OS;
-         return I2C_IS_RUNNING;
-    }
-
-    case ADS1115_STATE_POLL_OS:
-    {
-        return_value = Is_I2C_Read_Complete(&p_handle->read_flag);
-        if (return_value != I2C_OK)
-        {
-            break;
-        }
-
-        if ((p_handle->rx_buf[0] & ADS1115_OS) == 0u)
-        {
-        	I2C_Mem_Read_IT(p_i2c, ADS1115_ADDR, ADS1115_CONFIG_REG, p_handle -> rx_buf, 2, &p_handle->read_flag);
-
-            return I2C_IS_RUNNING;
-        }
-
-        I2C_Mem_Read_IT(p_i2c, ADS1115_ADDR, ADS1115_CONVER_REG, p_handle -> rx_buf, 2, &p_handle->read_flag);
-
-        p_handle->state = ADS1115_STATE_FETCH_DATA;
-        return I2C_IS_RUNNING;
-    }
-    case ADS1115_STATE_FETCH_DATA:
-    {
-    	return_value = Is_I2C_Read_Complete(&p_handle->read_flag);
-        if (return_value != I2C_OK)
-        {
-            break;
-        }
-
-        p_handle->state = ADS1115_STATE_PROCESS;
-        return I2C_IS_RUNNING;
-    }
-    case ADS1115_STATE_PROCESS:
-    {
-        ADS1115_Val_Cal(p_handle);
-
-        p_handle->state  = ADS1115_STATE_RESET;
-        p_handle->result = I2C_OK;
-        return I2C_OK;
-    }
-    default:
-    {
-        p_handle->state = ADS1115_STATE_RESET;
-        return I2C_IS_RUNNING;
-    }
-
-    }
-
-    if (return_value!= I2C_IS_RUNNING)
-    {
-        p_handle->state  = ADS1115_STATE_RESET;
-        p_handle->result = return_value;
-
-        return return_value;
-    }
-
-    return I2C_IS_RUNNING;
-
+    return I2C_Success;
 }
 
-bool ADS1115_Is_Read_Complete(ADS_1115_handle* p_handle)
-{
-    if (p_handle == NULL)
-    {
-        return false;
+I2C_Status_t ADS1115_ReadRawValue(ADS1115_Handle_t *hads, int16_t *raw_value) {
+    if (hads == NULL || raw_value == NULL) return I2C_Error;
+
+    uint8_t data[2];
+    /* Đọc 2 byte từ thanh ghi Conversion (0x00)*/
+    if (I2C_ReadMulti(hads->dev_i2c, hads->dev_address, ADS1115_REG_CONVERSION, data, 2) != I2C_Success) {
+        return I2C_Error;
     }
 
-    if (p_handle->result == I2C_OK)
-    {
-        p_handle->result = I2C_IS_RUNNING;     /* one-shot: clear after reading */
-        return true;
+    /* ADS1115 trả về định dạng 16-bit 2's-complement, MSB nằm trước*/
+    *raw_value = (int16_t)((data[0] << 8) | data[1]);
+
+    return I2C_Success;
+}
+
+I2C_Status_t ADS1115_ReadVoltage(ADS1115_Handle_t *hads, float *voltage) {
+    if (hads == NULL || voltage == NULL) return I2C_Error;
+
+    int16_t raw_value = 0;
+    I2C_Status_t status = ADS1115_ReadRawValue(hads, &raw_value);
+
+    if (status == I2C_Success) {
+        float multiplier = ADS1115_GetVoltageMultiplier(hads->dev_pga);
+        *voltage = (float)raw_value * multiplier;
     }
 
-    return false;
+    return status;
 }
 
 
+static float ADS1115_GetVoltageMultiplier(ADS1115_PGA_t pga) {
+    switch (pga) {
+        case ADS1115_PGA_6_144V: return 0.1875f;    // LSB Size: 187.5 uV[cite: 3]
+        case ADS1115_PGA_4_096V: return 0.125f;     // LSB Size: 125 uV[cite: 3]
+        case ADS1115_PGA_2_048V: return 0.0625f;    // LSB Size: 62.5 uV[cite: 3]
+        case ADS1115_PGA_1_024V: return 0.03125f;   // LSB Size: 31.25 uV[cite: 3]
+        case ADS1115_PGA_0_512V: return 0.015625f;  // LSB Size: 15.625 uV[cite: 3]
+        case ADS1115_PGA_0_256V: return 0.0078125f; // LSB Size: 7.8125 uV[cite: 3]
+        default:                 return 0.0625f;
+    }
+}

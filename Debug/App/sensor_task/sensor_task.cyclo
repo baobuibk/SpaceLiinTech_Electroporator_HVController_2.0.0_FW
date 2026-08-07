@@ -1,8 +1,6 @@
-../App/sensor_task/sensor_task.c:31:6:Sensor_ADC_Init	1
-../App/sensor_task/sensor_task.c:39:7:Sensor_I2C_Init	4
-../App/sensor_task/sensor_task.c:66:6:Sensor_ADC_task	1
-../App/sensor_task/sensor_task.c:72:6:Sensor_I2C_task	15
-../App/sensor_task/sensor_task.c:148:6:Sensor_I2C_EV_ISR	1
-../App/sensor_task/sensor_task.c:153:6:Onboard_Sensor_I2C_EV_ISR	1
-../App/sensor_task/sensor_task.c:157:6:Sensor_I2C_ER_ISR	1
-../App/sensor_task/sensor_task.c:161:6:Onboard_Sensor_I2C_ER_ISR	1
+../App/sensor_task/sensor_task.c:35:6:Sensor_ADC_Init	1
+../App/sensor_task/sensor_task.c:43:7:Sensor_I2C_Init	4
+../App/sensor_task/sensor_task.c:67:6:Sensor_Charger_I2C_Init	2
+../App/sensor_task/sensor_task.c:81:6:Sensor_ADC_task	1
+../App/sensor_task/sensor_task.c:87:6:Sensor_I2C_task	15
+../App/sensor_task/sensor_task.c:162:6:Sensor_Charger_I2C_Task	24

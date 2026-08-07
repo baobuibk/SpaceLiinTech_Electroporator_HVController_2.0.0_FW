@@ -21,7 +21,7 @@
 #include "app.h"
 
 
-#define CAP_300V_CHARNGE_RANGE_MAX 9
+#define CAP_300V_CHARNGE_RANGE_MAX 10
 Charge_Range_t Cap_300V_charge_range[CAP_300V_CHARNGE_RANGE_MAX] =
 {
     {
@@ -59,10 +59,14 @@ Charge_Range_t Cap_300V_charge_range[CAP_300V_CHARNGE_RANGE_MAX] =
     {
         .Volt_Value = 300,
         .Duty_Max = 45,
+    },
+    {
+        .Volt_Value = 310,
+        .Duty_Max = 45,
     }
 };
 
-#define CAP_50V_CHARNGE_RANGE_MAX 5
+#define CAP_50V_CHARNGE_RANGE_MAX 6
 Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
 {
     {
@@ -84,7 +88,11 @@ Charge_Range_t Cap_50V_charge_range[CAP_50V_CHARNGE_RANGE_MAX] =
     },
     {
         .Volt_Value = 50,
-        .Duty_Max = 20,
+        .Duty_Max = 25,
+    },
+    {
+        .Volt_Value = 55,
+        .Duty_Max = 25,
     }
 };
 
@@ -1015,8 +1023,8 @@ static void Cap_Controller_Charge_Monitor_50V(void)
 		}
 
 		s_Cap_50V.range_index++;
-		break;
 
+		break;
 	case CAP_SET_FREE_CHARGE_STATE:
 
 		db_cap_read(DB_ID_CAP_LV_STATE, &lv_state);
@@ -1028,7 +1036,6 @@ static void Cap_Controller_Charge_Monitor_50V(void)
 //        PID_SetOutputLimits(&s_Cap_50V.charge_PID, 0, cap_50V_set_duty);
 //        s_Cap_50V.charge_state = CAP_IS_FREE_CHARGE_STATE;
         break;
-
 	case CAP_IS_FREE_CHARGE_STATE:
 		break;
 

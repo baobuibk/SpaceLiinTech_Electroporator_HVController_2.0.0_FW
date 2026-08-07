@@ -655,10 +655,27 @@ uint8_t FSP_Line_Process(void)
 		fsp_print(7);
 		break;
 	}
+
+	case FSP_CMD_GET_BAT_VOLT:
+	{
+		ps_FSP_TX -> CMD = FSP_CMD_GET_BAT_VOLT;
+		ps_FSP_TX -> Payload.get_bat_volt.bat_volt = (uint8_t) (ads1115_dev.dev_volt_val[0] * 10.0f);
+		fsp_print(2);
+		break;
+	}
+	case FSP_CMD_RESET_HVC:
+	{
+		NVIC_SystemReset();
+	}
+	case FSP_CMD_HANDSHAKE:
+	{
+		ps_FSP_TX -> CMD = FSP_CMD_HANDSHAKE;
+		fsp_print(1);
+	}
 	default:
 		break;
 	}
-	return;
+	return 1;
 }
 
 /*---------------------------------------------------- STATIC FUNCTION ---------------------------------------------------*/

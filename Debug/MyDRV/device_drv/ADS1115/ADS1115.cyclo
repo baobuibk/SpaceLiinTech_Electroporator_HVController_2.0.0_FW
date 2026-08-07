@@ -1,0 +1,7 @@
+../MyDRV/device_drv/ADS1115/ADS1115.c:16:14:ADS1115_Init	3
+../MyDRV/device_drv/ADS1115/ADS1115.c:26:14:ADS1115_SetConfig	2
+../MyDRV/device_drv/ADS1115/ADS1115.c:43:14:ADS1115_StartSingleConversion	3
+../MyDRV/device_drv/ADS1115/ADS1115.c:57:14:ADS1115_IsReady	5
+../MyDRV/device_drv/ADS1115/ADS1115.c:74:14:ADS1115_ReadRawValue	4
+../MyDRV/device_drv/ADS1115/ADS1115.c:89:14:ADS1115_ReadVoltage	4
+../MyDRV/device_drv/ADS1115/ADS1115.c:104:14:ADS1115_GetVoltageMultiplier	11

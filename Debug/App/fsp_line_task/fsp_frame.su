@@ -1,2 +1,3 @@
-../App/fsp_line_task/fsp_frame.c:25:9:FSP_Line_Process	192	static
-../App/fsp_line_task/fsp_frame.c:666:13:fsp_print	56	static
+../Drivers/CMSIS/Include/core_cm4.h:1938:34:__NVIC_SystemReset	4	static,ignoring_inline_asm
+../App/fsp_line_task/fsp_frame.c:25:9:FSP_Line_Process	200	static
+../App/fsp_line_task/fsp_frame.c:683:13:fsp_print	56	static

@@ -263,8 +263,7 @@ I2C_Status_t I2C_WriteMulti(I2C_Handle_t *hi2c, uint8_t addr, uint8_t reg, uint8
     }
     LL_I2C_TransmitData8(hi2c->Instance, reg);
 
-    // Lan luot ghi tung byte du lieu (auto-increment o phia slave, theo dung
-    // datasheet cua tung IC - gia dinh tuong tu I2C_ReadMulti)
+
     for (uint16_t i = 0; i < size; i++) {
         timeout = I2C_TIMEOUT;
         while (!LL_I2C_IsActiveFlag_TXE(hi2c->Instance)) {
@@ -285,40 +284,42 @@ I2C_Status_t I2C_WriteMulti(I2C_Handle_t *hi2c, uint8_t addr, uint8_t reg, uint8
 
 I2C_Status_t I2C_IsDeviceReady(I2C_Handle_t *hi2c, uint8_t addr, uint32_t retries)
 {
-    uint32_t timeout;
+    uint32_t timeout = I2C_TIMEOUT;
 
-    timeout = I2C_TIMEOUT;
-    while (LL_I2C_IsActiveFlag_BUSY(hi2c->Instance) && timeout--);
-    if (timeout == 0) return I2C_Error;
+    while (LL_I2C_IsActiveFlag_BUSY(hi2c->Instance)) {
+        if (--timeout == 0) return I2C_Error;
+    }
 
     for (uint32_t attempt = 0; attempt <= retries; attempt++) {
 
         LL_I2C_GenerateStartCondition(hi2c->Instance);
+
         timeout = I2C_TIMEOUT;
-        while (!LL_I2C_IsActiveFlag_SB(hi2c->Instance) && timeout--);
-        if (timeout == 0) return I2C_Error;
+        while (!LL_I2C_IsActiveFlag_SB(hi2c->Instance)) {
+            if (--timeout == 0) return I2C_Error;
+        }
 
         LL_I2C_TransmitData8(hi2c->Instance, (addr << 1));
 
         timeout = I2C_TIMEOUT;
-        while (!LL_I2C_IsActiveFlag_ADDR(hi2c->Instance) && !LL_I2C_IsActiveFlag_AF(hi2c->Instance) && timeout--);
-        if (timeout == 0) {
-            LL_I2C_GenerateStopCondition(hi2c->Instance);
-            return I2C_Error;
+        while (!LL_I2C_IsActiveFlag_ADDR(hi2c->Instance) && !LL_I2C_IsActiveFlag_AF(hi2c->Instance)) {
+            if (--timeout == 0) {
+                LL_I2C_GenerateStopCondition(hi2c->Instance);
+                return I2C_Error;
+            }
         }
 
         if (LL_I2C_IsActiveFlag_ADDR(hi2c->Instance)) {
             LL_I2C_ClearFlag_ADDR(hi2c->Instance);
             LL_I2C_GenerateStopCondition(hi2c->Instance);
-            return I2C_Success; // Thiet bi da ACK dia chi -> co mat tren bus
+            return I2C_Success;
         }
 
-        // Bi NACK: xoa co AF, tao STOP roi thu lai (neu con luot retry)
         LL_I2C_ClearFlag_AF(hi2c->Instance);
         LL_I2C_GenerateStopCondition(hi2c->Instance);
     }
 
-    return I2C_Error; // Khong thiet bi nao tra loi sau tat ca cac lan thu
+    return I2C_Error;
 }
 
 void I2C_BusRecovery(I2C_Handle_t *hi2c,GPIO_TypeDef* SCL_Port, uint32_t SCL_Pin, GPIO_TypeDef* SDA_Port, uint32_t SDA_Pin)

@@ -55,6 +55,11 @@ typedef enum _FSP_CMD_typedef_
 	FSP_CMD_GET_SENSOR_HV_TEMP,
 	FSP_CMD_GET_SENSOR_LV_TEMP,
 
+	FSP_CMD_GET_BAT_VOLT,
+	FSP_CMD_GET_AC_DET,
+	FSP_CMD_GET_CHAR_DET,
+
+	FSP_CMD_RESET_HVC,
 	FSP_CMD_HANDSHAKE,
 
 } FSP_CMD_typedef;
@@ -275,13 +280,19 @@ typedef struct _GET_SENSOR_HVC_INIT_STATE_
 
 }GET_SENSOR_HVC_INIT_STATE;
 
+typedef struct _GET_BAT_VOLT_
+{
+	uint8_t		bat_volt;
+	uint8_t		get_bat_volt_response;
+}GET_BAT_VOLT;
+
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ Ultility Command ~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-typedef struct _FSP_HANDSAKE_
+typedef struct _FSP_HANDSHAKE_
 {
 	uint8_t 	Check;
 
-} FSP_HANDSAKE;
+} FSP_HANDSHAKE;
 
 typedef union _FSP_RESPONSE_
 {
@@ -324,7 +335,9 @@ typedef union _FSP_Payload_Frame_typedef_
 	GET_SENSOR_HV_TEMP		get_sensor_hv_temp;
 	GET_SENSOR_LV_TEMP		get_sensor_lv_temp;
 
-	FSP_HANDSAKE			handshake;
+	GET_BAT_VOLT			get_bat_volt;
+
+	FSP_HANDSHAKE			handshake;
 	FSP_RESPONSE			fsp_response;
 
 } FSP_Payload_Frame_typedef;
